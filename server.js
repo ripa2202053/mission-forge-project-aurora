@@ -102,3 +102,6 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log(`Bound GAME_SERVICE_URL: ${GAME_SERVICE_URL}`);
   }
 });
+
+module.exports = server;
+
