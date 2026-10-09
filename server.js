@@ -25,7 +25,7 @@ const MIME_TYPES = {
   '.mjs': 'text/javascript; charset=utf-8'
 };
 
-const server = http.createServer((req, res) => {
+function requestHandler(req, res) {
   let reqPath = decodeURI(req.url.split('?')[0]);
   if (reqPath === '/' || reqPath === '') reqPath = '/index.html';
 
@@ -94,14 +94,22 @@ const server = http.createServer((req, res) => {
     const stream = fs.createReadStream(safePath);
     stream.pipe(res);
   });
-});
+}
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`MISSION FORGE server active on port ${PORT}`);
-  if (GAME_SERVICE_URL) {
-    console.log(`Bound GAME_SERVICE_URL: ${GAME_SERVICE_URL}`);
-  }
-});
+const server = http.createServer(requestHandler);
 
-module.exports = server;
+// Only bind to local port when running directly (node server.js)
+if (require.main === module) {
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`MISSION FORGE server active on port ${PORT}`);
+    if (GAME_SERVICE_URL) {
+      console.log(`Bound GAME_SERVICE_URL: ${GAME_SERVICE_URL}`);
+    }
+  });
+}
+
+// Export the function handler for Vercel Node runtime & server instance for test suites
+module.exports = requestHandler;
+module.exports.default = requestHandler;
+module.exports.server = server;
 

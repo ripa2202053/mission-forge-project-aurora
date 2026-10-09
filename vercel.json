@@ -24,6 +24,12 @@
   },
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": {
+        "service": "app"
+      }
+    },
+    {
       "source": "/game/(.*)",
       "destination": {
         "service": "game"
@@ -44,7 +50,7 @@
     {
       "source": "/(.*)",
       "destination": {
-        "service": "app"
+        "service": "game"
       }
     }
   ]
