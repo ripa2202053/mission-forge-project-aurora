@@ -25,6 +25,25 @@ const MIME_TYPES = {
   '.mjs': 'text/javascript; charset=utf-8'
 };
 
+// Cache index.html in memory for instant delivery
+let cachedIndexHtml = null;
+function getIndexHtml() {
+  if (cachedIndexHtml) return cachedIndexHtml;
+  const candidates = [
+    path.join(__dirname, 'index.html'),
+    path.join(process.cwd(), 'index.html')
+  ];
+  for (const c of candidates) {
+    try {
+      if (fs.existsSync(c)) {
+        cachedIndexHtml = fs.readFileSync(c);
+        return cachedIndexHtml;
+      }
+    } catch (_) {}
+  }
+  return null;
+}
+
 function requestHandler(req, res) {
   let reqPath = decodeURI(req.url.split('?')[0]);
   if (reqPath === '/' || reqPath === '') reqPath = '/index.html';
@@ -66,34 +85,53 @@ function requestHandler(req, res) {
     }
   }
 
-  // 2. Static File Serving from Local File System
-  const safePath = path.normalize(path.join(__dirname, reqPath));
-  if (!safePath.startsWith(__dirname)) {
-    res.writeHead(403);
-    res.end('Forbidden');
+  // 2. Direct Index HTML delivery (Pura Project)
+  if (reqPath === '/index.html') {
+    const htmlBuffer = getIndexHtml();
+    if (htmlBuffer) {
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Content-Length': htmlBuffer.length,
+        'Cache-Control': 'no-cache'
+      });
+      res.end(htmlBuffer);
+      return;
+    }
+  }
+
+  // 3. Static File Serving (Resolves from __dirname or process.cwd())
+  const candidates = [
+    path.normalize(path.join(__dirname, reqPath)),
+    path.normalize(path.join(process.cwd(), reqPath))
+  ];
+
+  let resolvedFile = null;
+  for (const candidate of candidates) {
+    try {
+      if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+        resolvedFile = candidate;
+        break;
+      }
+    } catch (_) {}
+  }
+
+  if (!resolvedFile) {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('404 Not Found');
     return;
   }
 
-  fs.stat(safePath, (err, stats) => {
-    if (err || !stats.isFile()) {
-      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-      res.end('404 Not Found');
-      return;
-    }
-
-    const ext = path.extname(safePath).toLowerCase();
-    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-    res.writeHead(200, {
-      'Content-Type': contentType,
-      'Content-Length': stats.size,
-      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-      'Pragma': 'no-cache',
-      'Expires': '0'
-    });
-
-    const stream = fs.createReadStream(safePath);
-    stream.pipe(res);
+  const ext = path.extname(resolvedFile).toLowerCase();
+  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+  const stat = fs.statSync(resolvedFile);
+  res.writeHead(200, {
+    'Content-Type': contentType,
+    'Content-Length': stat.size,
+    'Cache-Control': 'public, max-age=3600'
   });
+
+  const stream = fs.createReadStream(resolvedFile);
+  stream.pipe(res);
 }
 
 const server = http.createServer(requestHandler);
