@@ -1,3 +1,47 @@
 {
-  "cleanUrls": true
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "app": {
+      "root": ".",
+      "runtime": "node",
+      "bindings": [
+        {
+          "type": "service",
+          "service": "game",
+          "format": "url",
+          "env": "GAME_SERVICE_URL"
+        }
+      ]
+    },
+    "game": {
+      "root": "src/game",
+      "framework": "vite"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/game/(.*)",
+      "destination": {
+        "service": "game"
+      }
+    },
+    {
+      "source": "/game",
+      "destination": {
+        "service": "game"
+      }
+    },
+    {
+      "source": "/src/game/dist/(.*)",
+      "destination": {
+        "service": "game"
+      }
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "app"
+      }
+    }
+  ]
 }
