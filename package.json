@@ -4,8 +4,9 @@
   "description": "**NASA Space Apps Challenge 2026 // Category: Space Mission Game Design**",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "build": "echo 'Static build ready'",
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
