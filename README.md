@@ -1,184 +1,246 @@
-# MISSION FORGE: PROJECT AURORA — An Interactive Space Mission Design Game
-**NASA Space Apps Challenge 2026 // Category: Space Mission Game Design**
+# 🚀 MISSION FORGE: PROJECT AURORA
+### **NASA Space Apps Challenge 2026 // Category: Space Mission Game Design**
+
+[![NASA Space Apps 2026](https://img.shields.io/badge/NASA_Space_Apps-2026_Global_Challenge-0b3d91?style=for-the-badge&logo=nasa&logoColor=white)](https://www.spaceappschallenge.org/)
+[![WebGL Three.js](https://img.shields.io/badge/3D_Engine-Three.js_r128-000000?style=for-the-badge&logo=three.js&logoColor=white)](https://threejs.org/)
+[![Web Audio API](https://img.shields.io/badge/Audio-Procedural_Web_Audio_API-cyan?style=for-the-badge)](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Production_Live-00E5FF?style=for-the-badge&logo=vercel&logoColor=black)](https://mission-forge-project-aurora.vercel.app)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
 ---
 
-## 🚀 Mission Overview
-**MISSION FORGE: PROJECT AURORA** is a full-viewport, responsive, single-page interactive playable space mission engineering simulation game. It models the complex multi-variable systems engineering, architectural trade-offs, and in-flight crisis decision-making required for deep-space interplanetary exploration.
+## 🌌 Executive Overview
 
-Engineered with an authentic **NASA Cockpit Flight Deck & Mission Control Sci-Fi HUD**, this application features a seamless looping HTML5 background space video, a dark radial vignette overlay, subtle cockpit visor brackets at all screen edges, glowing glassmorphic panels, Google Fonts typography (`Rajdhani` and `Share Tech Mono`), live persistent telemetry gauges, and a pure Web Audio API synthesizer engine.
+**MISSION FORGE: PROJECT AURORA** is a photorealistic, full-viewport 3D space mission engineering simulation and flight adventure game built from the ground up for the **NASA Space Apps Challenge 2026**. 
+
+The simulation models real-world aerospace tradeoffs—balancing budget constraints, structural mass budgets, and single-stage ideal $\Delta v$ (Tsiolkovsky rocket equation)—with high-stakes in-flight emergencies, Martian rover surface traversals, and scientific sample return. Designed with an authentic **NASA Jet Propulsion Laboratory (JPL) Mission Control & Cockpit HUD** aesthetic, the application combines hardware-accelerated WebGL graphics, post-processing bloom shaders, dynamic camera choreography, and a zero-dependency procedural **Web Audio API** soundscape.
+
+* **Live Demo (Vercel):** [https://mission-forge-project-aurora.vercel.app](https://mission-forge-project-aurora.vercel.app)
+* **Live Demo (GitHub Pages):** [https://ripa2202053.github.io/mission-forge-project-aurora/](https://ripa2202053.github.io/mission-forge-project-aurora/)
+* **Repository:** [https://github.com/ripa2202053/mission-forge-project-aurora](https://github.com/ripa2202053/mission-forge-project-aurora)
 
 ---
 
-## 🛸 Game Loop Architecture (5 Phases)
+## 🎮 Interface & Mission Gallery
 
+| **01. JPL Mission Control Flight Deck** | **02. 3D Modular Spacecraft Assembly Hangar** |
+| :---: | :---: |
+| ![Mission Control Flight Deck](src/game/previews/01-mission-control.png) | ![Assembly Hangar](src/game/previews/assembly-nine-systems.png) |
+
+| **03. Deep Space Cruise & CME Crisis** | **04. Surface Rover Exploration & Sample Retrieval** |
+| :---: | :---: |
+| ![Flight & Hazard Encounter](src/game/previews/03-flight.png) | ![Surface Rover Exploration](src/game/previews/05-rover.png) |
+
+| **05. Mission Debrief & Scientific Evidence Review** | **06. Interactive 3D Orbit & Assembly** |
+| :---: | :---: |
+| ![Debrief & Evidence Review](src/game/previews/campaign-debrief.png) | ![Hangar Complete](src/game/previews/hangar-complete.png) |
+
+---
+
+## 🏛️ System & Architecture Diagrams
+
+### 1. End-to-End Simulation Lifecycle
 ```mermaid
-flowchart LR
-    P1["1. Target Selector<br/>(Earth, Moon, Mars, Europa, Asteroids)"] --> P2["2. Blueprint Builder<br/>(Power, Comms, Instruments, Shielding)"]
-    P2 --> Launch["Engage Launch Sequence<br/>(3... 2... 1... Ignition)"]
-    Launch --> P3["3. In-Flight Crisis<br/>(Power Reallocation & Solar CME Storm)"]
-    P3 --> P4["4. Results & Scorecard<br/>(Radial Gauges & NASA Heliophysics Debrief)"]
-    P4 --> P5["5. Summary & Replay<br/>(Telemetry Log JSON & Mission Reset)"]
+flowchart TD
+    subgraph S1["PHASE 1: BRIEFING & DESTINATION"]
+        A["AAA Boot Sequence<br/>(Starfield Dolly & Audio Hum)"] --> B["Celestial Target Selector<br/>(Earth, Moon, Mars, Europa, Psyche)"]
+        B --> C["Mission Dossier & Trajectory Window<br/>(Hohmann Transfer Arc & Delta-V)"]
+    end
+
+    subgraph S2["PHASE 2: SYSTEMS ENGINEERING"]
+        C --> D["Orbital Assembly Hangar Dock"]
+        D --> E{"Subsystem Trade-Off Engine<br/>($320M / 85T Mass Limit)"}
+        E -->|Power| E1["Photovoltaic Solar vs. RTG Fission"]
+        E -->|Comms| E2["Ka-Band Microwave vs. DSOC Laser"]
+        E -->|Shielding| E3["Superconducting Deflector vs. Water Wall"]
+        E1 & E2 & E3 --> F["Launch Readiness Review (GO/NO-GO)"]
+    end
+
+    subgraph S3["PHASE 3: TRANSIT & CRISIS"]
+        F --> G["Departure Burn & Hyper-Speed Transit"]
+        G --> H{"Solar CME Hazard Intercept<br/>(Class X-12 Flare Event)"}
+        H -->|Tactical Option A| H1["Deploy Magnetic Deflector<br/>(+15 Score / High Power Draw)"]
+        H -->|Tactical Option B| H2["Passive Storm Shelter Retreat<br/>(+10 Score / Blackout)"]
+    end
+
+    subgraph S4["PHASE 4: EXPLORATION & DEBRIEF"]
+        H1 & H2 --> I["Orbital Capture & Rover Surface Traverse"]
+        I --> J["Mineral Sample Retrieval & Telemetry Archive"]
+        J --> K["3D Carousel Debrief & NASA Certificate"]
+    end
 ```
 
-### Phase 1: Dramatic AAA Game Title Sequence ("MISSION FORGE")
-- **First-Load Deep Space Boot Sequence (2 Seconds)**:
-  - Deep space void boot screen with ambient cosmic audio synthesizer hum.
-  - Green/cyan terminal text typewriter animation: `// DEEP SPACE NETWORK: ONLINE // CONNECTING TO ARES V ORBITAL VIEWPORT...`
-  - Automated high-speed camera dolly forward through 5,000 stars, revealing the majestic glowing Mars sphere.
-- **Cinematic Title & Hero Composition**:
-  - Centered Grand Title in glowing white/cyan: **`MISSION FORGE`** (`clamp(3.6rem, 7.8vw, 6.2rem)`).
-  - Sub-header: **`[ PROJECT AURORA // NASA MISSION DESIGN SIMULATOR ]`** with glowing cyan pulse beacon.
-  - Iconic Challenge in sleek tracking typography: **`EARTH NEEDS YOU. CAN YOU DESIGN A MISSION THAT MAKES IT HOME?`**
-- **Floating Glassmorphic Flight Briefing Badge**:
-  - Translucent pill badge: **`[ TARGET: MARS ] • [ CREW: 4 ] • [ DURATION: 18 MONTHS ] • [ BUDGET: $210M ]`** with backdrop blur and cyan neon borders.
-  - Center animated 10-second circular glowing cyan SVG countdown ring with live audio tick and critical alert countdown.
-- **High-Visibility Launch CTA Button**:
-  - Wide glowing cyan button: **`[ ENTER MISSION CONTROL // START DESIGN ]`**.
-  - Interactive Bracket Lock: on hover, coordinate brackets `[ ]` smoothly lock into position with intense cyan neon glow and audio hover tick.
-  - On click: triggers a dramatic camera zoom into Mars with warp-drive speed lines, transitioning to the Celestial Target Selector.
+---
 
-### Phase 2: Celestial Target Selector ("Design Your Own Mission")
-- **Seamless Camera Dolly / Zoom Transition**:
-  - Clicking `[ INITIATE MARS MISSION DESIGN ]` from Screen 1 triggers a smooth TWEEN camera dolly into the Screen 2 interplanetary trajectory stage.
-  - Includes a `[ ⮜ RETURN TO MISSION BRIEFING ]` button to fly back to Screen 1 at any time.
-- **Persistent Top Flight Deck HUD**:
-  - Live persistent gauges: `PWR: 68%`, `FUEL: 54%`, `COMMS: 82%`, `BUDGET: $210M`, plus Web Audio API toggle.
-- **Horizontal Planet Selector Deck (5 Destinations)**:
-  - 5 glassmorphic destination cards along the bottom deck:
-    1. **Earth Observation** (Low Earth Orbit // Climate Science)
-    2. **Moon Outpost** (Artemis Gateway // Lunar Polar Outpost)
-    3. **Mars Expedition** (Aurora Expedition // Deep Astrobiology - DEFAULT ACTIVE)
-    4. **Europa Ocean** (Jovian System // Subsurface Ocean Probe)
-    5. **Asteroid Belt** (16 Psyche Survey // Metal Prospecting)
-  - Features real high-resolution spherical textured planet preview icons with soft outer rim lighting and 3D specular shadows.
-  - Clicking any card dynamically updates the 3D celestial sphere in the WebGL scene (swapping textures, atmospheric glow colors, planetary radii, and orbital rings), plays an audio click chime, and updates the telemetry dossier in real time.
-- **Interactive Target Dossier Panel (Mars / Project Aurora)**:
-  - Transparent glassmorphic dossier panel with `backdrop-filter: blur(16px)` and cyan borders:
-    - **Mission Codename**: `AURORA PRIME // MARS HABITABILITY MISSION`
-    - **Primary Objective**: *"Search for signs of past microbial life and map subsurface water ice reserves."*
-    - **Telemetry Specs Grid**:
-      - `DIFFICULTY: [ADVANCED]`
-      - `FLIGHT TIME: [18 MONTHS ROUND-TRIP]`
-      - `CREW COMPLEMENT: [4 ASTRONAUTS]`
-      - `TRAJECTORY WINDOW: [HOHMANN TRANSFER ORBIT]`
-      - `PRIMARY SURFACE TARGET: [JEZERO CRATER DELTA]`
-- **Action CTA & Warp Transition to Screen 3**:
-  - Primary button: **`[ MISSION SELECTED: ASSEMBLE SPACECRAFT ] ➔`**
-  - Triggers a synthesized warp hum and a 3D camera fly-by speed-lines effect into the Spacecraft Configurator & Assembly Hangar (Screen 3).
+### 2. Spacecraft Subsystems Engineering & Resource Matrix
+```mermaid
+flowchart LR
+    subgraph Budget["RESOURCE BOUNDARIES"]
+        B1["Max Budget: $320M"]
+        B2["Max Wet Mass: 85,000 kg"]
+    end
 
-### Phase 3: Spacecraft Configurator & 3D Orbital Hangar Dock ("Screen 3")
-- **100% Realistic 3D Interplanetary Explorer Vessel (Zero Wireframe Nets or Cages)**:
-  - Wireframe sphere meshes completely removed: vessel floats completely clean and unobstructed in deep space.
-  - Inside the center WebGL Three.js canvas, renders an authentic 3D modular explorer vessel:
-    - **Crew Habitat Module**: Cylindrical matte titanium fuselage (`roughness: 0.35, metalness: 0.85`), dark thermal aerogel nosecone, pressurized gold foil airlock collar, and tinted cockpit canopy with specular reflections.
-    - **Deployable Solar Array Wings**: Articulated truss arms with large photovoltaic panels featuring deep-blue/cyan solar cells and gold busbars.
-    - **Deep-Space Comms Suite**: Steerable Ka-Band parabolic microwave dish with sub-reflector feed horn (swappable to next-gen DSOC Optical Laser Transceiver dome).
-    - **Dual Ion Propulsion Thrusters**: Machined titanium engine bell nozzles with inner white-hot core cones (`0xFFFFFF`), outer glowing cyan plasma engine plumes, and an animated 90-particle ion exhaust stream flickering dynamically in the animation loop.
-    - **Radiation Deflector Core**: Superconducting toroid ring (`detailedShieldRing`) with dynamic emissive cyan glow pulsing organically.
-  - **Authentic Microgravity Drift Animation**: Multi-frequency organic floating physics (pitch, yaw, roll, and vertical hover oscillation) making the spacecraft feel alive in space.
-  - **Full 360° OrbitControls**: Click and drag anywhere to inspect the 3D vessel from any angle (front, top, underside, engine nozzles).
-- **Compact 3-Tab Subsystem Configurator (Zero Viewport Overflow)**:
-  - Eliminates vertical browser scrollbars completely with a sleek, 100vh gaming cockpit drawer (`background: rgba(4, 12, 24, 0.4)`, `backdrop-filter: blur(16px)`).
-  - Divided into 3 horizontal category tabs: **`[ POWER ]`** | **`[ COMMS ]`** | **`[ SHIELDING ]`**.
-  - Selecting a tab reveals only the 2 pertinent hardware choices, keeping vertical footprint compact and clean.
-  - Subsystem cards feature reduced padding, neon-accented hover effects, and bright cyan active status indicator dots.
-- **Interactive 3D Subsystem Callouts**:
-  - 3 dynamic holographic leader badges tracked in 3D screen space (`project(camera)`) and connected by ultra-sharp SVG leader lines (`1.2px` stroke, dashed).
-  - Pointers are clickable: clicking **`[ SUBSYS 01: POWER BUS ]`**, **`[ SUBSYS 02: HIGH-GAIN COMMS ]`**, or **`[ SUBSYS 03: DEFLECTOR SHIELD ]`** automatically jumps to that category tab in the right drawer with visual feedback.
-- **Dynamic 3D Hardware Swapping & Floating Trade-Off Tags**:
-  - Equipping options swaps 3D geometry in real-time (Solar Wings <-> RTG fins, Ka-Band Dish <-> DSOC Laser, Magnetic Ring <-> Water Wall).
-  - Spawns animated floating count-up tags over the ship:
-    `+55 kW SOLAR POWER`, `+18% SCIENCE // DSOC LASER`, `+650 KG // CONTINUOUS RTG`.
-- **Permanently Pinned Bottom Launch CTA**:
-  - Pinned footer at the bottom of the drawer displays real-time telemetry summary badges:
-    `TOTAL MASS: 14,200 KG` | `POWER NET: +17.0 kW` | `BUDGET: $210M / $250M`.
-  - Prominent glowing neon cyan button: **`[ CONFIRM CONFIGURATION & COMMENCE TRANSIT ➔ ]`**.
-- **100% Borderless Edge-to-Edge Viewport**:
-  - All HUD corner bracket elements, reticles, scanline overlays, and visor lines completely eliminated.
-  - Viewport is seamless, borderless, and edge-to-edge.
+    subgraph Subsystems["9 MODULAR HARDWARE SUBSYSTEMS"]
+        direction TB
+        P["Propulsion Engine<br/>• Dual Hall-Effect Ion<br/>• Bipropellant Chemical"]
+        E["Power Bus<br/>• Deployable UltraFlex Solar<br/>• Next-Gen RTG"]
+        C["High-Gain Comms<br/>• Ka-Band Parabolic Dish<br/>• Deep Space Optical DSOC"]
+        S["Thermal & Radiation Shielding<br/>• Superconducting Magnetosphere<br/>• Multi-Layer Polyethylene Aerogel"]
+        I["Science Package<br/>• Subsurface Radar Sounder<br/>• Raman Spectroscopy Suite"]
+    end
 
-### Phase 4: Interactive Multi-Stage NASA Flight Transit Simulation ("Screen 4")
-- **Stage 1 & 2: Hyper-Speed Launch & 4-Second Dynamic Cruise**:
-  - Clicking `[ CONFIRM CONFIGURATION & COMMENCE TRANSIT ]` initiates the deep-space synthesizer music loop (`space_ambience_loop.ogg`) at volume 0.35 looping.
-  - Camera dynamically swoops behind the dual ion thrusters.
-  - Dual ion engine plumes burst into hyperdrive thrust with star-streak warp lines stretching past the camera.
-  - Real-time telemetry readouts update dynamically:
-    - `WARP ACCELERATION`: Ramping smoothly from `11.2 KM/S` -> `32.4 KM/S`.
-    - `TRANSIT STAGE`: `DEEP SPACE CRUISE`.
-    - `DISTANCE TO MARS`: Real-time countdown from `54,600,000 KM` decreasing dynamically each frame.
-  - **3-Way Interactive Camera Controls**:
-    - **`[ 🛰️ CHASE CAM ]`**: 3rd-person camera dynamically locked behind the ship.
-    - **`[ 🌌 TACTICAL SOLAR MAP ]`**: Overhead high-angle view of the inner solar system and full transfer arc.
-    - **`[ 🚀 COCKPIT VIEWPORT ]`**: Forward-facing cockpit vantage point looking ahead toward deep space.
-- **Stage 3: Sudden Solar Storm Crisis Intercept (After 4s Cruise)**:
-  - Exactly after 4 seconds of cruising, transition directly into the Space Weather / Solar Flare Crisis encounter.
-  - Red alert klaxon alarm and flashing warning overlays:
-    `⚠️ CLASS X-12 CORONAL MASS EJECTION DETECTED // 850 mSv/hr FLUX`.
-  - Realistic 3D solar particle storm (1,800 energetic particles) rushes violently from the Sun across the flight path.
-  - 15-second circular SVG countdown timer ring prompts a critical tactical choice:
-    - **Option A: `[ ⚡ DEPLOY SUPERCONDUCTING DEFLECTOR SHIELD ]`**: Magnetic toroid ring flares to 300% emissive intensity and pulses, deflecting the CME flux (+15 Score bonus, 100% crew protection).
-    - **Option B: `[ 🛡️ STORM SHELTER & WATER WALL BUFFER ]`**: Crew retreats into passive water-shielded habitat (+10 Score bonus, temporary telemetry blackout).
-- **Stage 4: Mars Insertion & Victory Debrief**:
-  - Ship arrives at Mars, rotates 180° into retrograde burn attitude, and fires ion thrusters to brake into a stable 320 km Martian polar orbit (`Δv: 1.4 km/s`).
-  - Triumphant NASA fanfare audio triggers.
-  - **Comprehensive Victory Debrief Screen**:
-    - **Flight Scorecard**: Dynamic score out of 100 (e.g. `96/100`) and Grade A+ rating.
-    - **Telemetry Breakdown**: Total Transit Duration (214 Days / 7.1 Mos), Distance (225.48M KM), Crew Survival (100%), Fuel Reserves (62.8%).
-    - **Official NASA Flight Architect Certificate**: Official credential box with NASA blue insignia, authorized signatures, and Certificate ID: `NASA-AURORA-ARES5-2026`.
-    - **Replay & Education**:
-      - **`[ 🔄 DESIGN ANOTHER MISSION ]`**: Smoothly resets state and returns to Celestial Destination Selector.
-      - **`[ 📜 VIEW NASA HELIOPHYSICS SCIENTIFIC LOGS ]`**: Educational modal with real NASA data on CMEs, SPEs, Mars 2020 RAD radiation levels, and DSOC optical laser communications.
+    subgraph Output["FLIGHT DYNAMICS OUTPUT"]
+        R1["Ideal Delta-V (Rocket Equation)"]
+        R2["Payload Mass Fraction"]
+        R3["Emergency Margin Rating"]
+    end
 
-## 🎛️ Design System & Technical Specifications
-- **Full WebGL 3D Three.js Engine & Photorealistic PBR Pipeline**: Complete 3D viewport canvas powered by Three.js (r128 / ^0.186):
-  - **Dynamic Celestial Axis Rotation & Day/Night Terminator**: Realistic continuous planetary spin (`rotation.y += 0.0015`) on tilted axes. Surface bump mapping (`bumpScale: 0.32`, `roughness: 0.88`) casts deep, dynamic moving relief shadows across craters and mountain ridges against harsh directional sunlight (`intensity: 3.8` at `(65, 25, 42)`).
-  - **Authentic Zero-G Buoyancy Float**: Spacecraft micro-gravity buoyancy using smooth sine wave oscillations (`position.y += Math.sin(time * 0.8) * 0.003`, `rotation.z += Math.cos(time * 0.5) * 0.001`, `rotation.y += Math.sin(time * 0.3) * 0.0008`), keeping the vessel gracefully alive in the orbital hangar dock and planetary orbit.
-  - **Photorealistic Metallic PBR Spacecraft**: Fuselage rendered with `MeshPhysicalMaterial` (`metalness: 0.9, roughness: 0.18, clearcoat: 0.8, clearcoatRoughness: 0.1, color: 0xC8D2DC`) for sharp specular gloss highlights along the hull, accented with gold thermal foil insulation wrap (`color: 0xFFA500`, clearcoat, emissive) and exposed copper conduits.
-  - **High-Intensity Glowing Ion Propulsion**: Conical thruster bell nozzles emitting bright emissive cyan plumes (`MeshStandardMaterial` with `color: 0x00FFFF, emissive: 0x00FFFF, emissiveIntensity: 2.5`, additive blending) and an animated trailing particle exhaust stream streaming behind the vessel in real time.
-  - **Pulsing Orbital Trajectory**: Dynamic orbital trajectory line with sinusoidal opacity pulsing (`opacity = 0.55 + Math.sin(time * 2.5) * 0.22`).
-  - **Multi-Layered Cosmic Void & Space Dust**: 3 distinct parallax starfield layers (3,000 deep space stars, 2,000 mid-range constellations, 800 foreground stars) rotating at differentiated parallax rates, plus 500 drifting zero-G micron space dust particles floating past the camera for deep perspective depth.
-  - **Cinematic Camera Choreography & Smooth Damping**: `OrbitControls` with smooth damping (`dampingFactor: 0.05`) and automated idle slow-pan auto-rotation (`autoRotate: true, autoRotateSpeed: 0.45`) creating an AAA game cinematic experience when not dragging.
-  - **3D Solar CME Particle Storm**: 1,800 energetic red/orange/amber particle system rushing past the camera with cockpit emergency red alert strobe and deployable 3D magnetic shield bubble.
-- **Post-Processing & Glow Engine**: Powered by `postprocessing` / `@react-three/postprocessing` with `EffectComposer`, `RenderPass`, and `BloomEffect` delivering realistic bloom glow on cyan/blue plasma engine thrusters, core flame cones, and planetary atmospheres.
-- **Background Layer**: Dual-mode rendering with seamless full-screen HTML5 deep-space background video fallback and real-time WebGL canvas.
-- **HUD & Cockpit Frame**: Transparent floating sci-fi layer (`pointer-events: none` container with `pointer-events: auto` interactive controls), cockpit visor overlay with glassmorphic panels (`background: rgba(6, 18, 36, 0.55); backdrop-filter: blur(14px); border: 1px solid rgba(0, 229, 255, 0.35); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.55), 0 0 18px rgba(0, 229, 255, 0.22)`).
-- **Typography & Font Stack**:
-  - `Orbitron`: Primary titles, grand headers, mission identifiers, and cyber buttons.
-  - `Space Grotesk`: Secondary UI descriptions, mission briefs, and dialog text.
-  - `JetBrains Mono` / `Share Tech Mono`: High-contrast live flight telemetry readouts, mission clock, gauges, and numerical data.
-- **Persistent Top Telemetry Bar**: Persistent header flight deck featuring:
-  - Vector NASA Meatball insignia with cyan orbital drop-shadow.
-  - Title: `MISSION FORGE: PROJECT AURORA` with subtitle telemetry tag.
-  - Live animated gauges: `POWER: 68%`, `FUEL: 54%`, `COMMS: 82%`, `BUDGET: $210M`.
-  - Ambient audio toggle button with live status indicators.
-- **Pure Procedural Web Audio API Synthesizer (Zero External Dependencies)**:
-  - 100% self-contained synthesized audio engine with zero external audio file downloads:
-  - Low-frequency ambient cosmic hum: Dual sine oscillator at 55Hz & 110Hz routed through a 160Hz lowpass filter with smooth master gain ramping.
-  - Crisp tactile UI beeps and frequency-swept chirps (720Hz $\rightarrow$ 1440Hz) automatically triggered on all buttons, tabs, hardware option cards, and celestial targets.
-  - Synthesized white-noise thruster burn acoustic burst with resonant bandpass filtering.
-  - 1.5 Hz emergency Red Alert frequency-modulated alarm klaxon.
-  - Affirmative action chimes and triumphant multi-tone victory fanfare.
-- **Pure Gaming Viewport**: Full viewport height (`100vh`, `overflow: hidden`) locking the player into an authentic cockpit flight deck experience with full 3D interactive orbital drag controls.
+    Budget --> Subsystems
+    Subsystems --> Output
+```
 
 ---
 
-## 💻 How to Run
+### 3. Procedural Web Audio API Architecture
+```mermaid
+flowchart TD
+    subgraph Engine["WEB AUDIO API SYNTHESIZER GRAPH"]
+        AC["AudioContext (Auto-resume on User Interaction)"]
+        
+        subgraph Voices["Procedural Synthesizers"]
+            OSC1["Dual Sub-Bass Sine Oscillators<br/>(45 Hz - 60 Hz Cosmic Drone)"]
+            W_NOISE["White Noise Propulsion Generator<br/>(BufferSource)"]
+            Q_TONE["Apollo Quindar Beep Generator<br/>(2525 Hz Pulse Sine)"]
+            ALERT["Red Alert Alarm Generator<br/>(Sawtooth 320 Hz LFO-Modulated)"]
+        end
 
-The game is hosted and ready to play immediately:
+        subgraph Filtering["Dynamic Filtering & Modulation"]
+            LPF1["Resonant Lowpass Filter<br/>(Cutoff: 180 Hz - 650 Hz dynamic throttle)"]
+            BPF1["Bandpass RCS Thruster Shaper<br/>(1200 Hz Q: 3.5)"]
+            ENV["Attack / Decay Gain Envelopes"]
+        end
 
-1. **Active Local Server**:
-   A native Node.js HTTP server is actively running:
-   ```bash
-   node server.js
-   ```
-2. **Access in Browser**:
-   Open **[http://localhost:8080](http://localhost:8080)** in Chrome, Edge, Firefox, or Safari.
-3. **Standalone Direct Launch**:
-   You can also double-click `index.html` directly in your file explorer.
+        subgraph Master["Master Output"]
+            PAN["Stereo Panner Node"]
+            VOL["Master Volume & Mute Switch"]
+            DEST["AudioDestinationNode (Speakers/Headphones)"]
+        end
+    end
+
+    AC --> Voices
+    OSC1 --> ENV --> VOL
+    W_NOISE --> LPF1 --> VOL
+    Q_TONE --> ENV --> PAN --> VOL
+    ALERT --> ENV --> VOL
+    VOL --> DEST
+```
 
 ---
 
-*"Maybe the next space mission designer is already playing."*  
-**NASA Space Apps Challenge 2026**
+### 4. Cloud Deployment & Edge Microservice Architecture
+```mermaid
+flowchart LR
+    Client["User Browser / Client"] --> Edge["Vercel Edge Network (Global CDN)"]
+    
+    subgraph VercelProject["Vercel Deployment Architecture"]
+        Edge -->|Path: /| AppService["App Service (Repository Root)<br/>• index.html (347 KB Full NASA 3D Suite)<br/>• Shaders, Models & Textures CDN"]
+        Edge -->|Path: /game/*| GameService["Game Service (src/game)<br/>• Vite Framework Build<br/>• Modular Sub-Expedition Modules"]
+        
+        AppService -.->|Internal Service Binding| GameService
+    end
 
+    Local["Local Machine (node server.js)"] --> LocalServer["Native Node.js HTTP Server (:8080)<br/>Auto-fallback & Static File Streaming"]
+```
+
+---
+
+## 🔬 Scientific Realism & NASA Mission Data Alignment
+
+Every mechanic in **MISSION FORGE: PROJECT AURORA** is grounded in real NASA mission parameters, aerospace engineering literature, and planetary science data:
+
+| Mission System | Scientific Foundation | NASA Mission Reference | In-Game Simulation Behavior |
+| :--- | :--- | :--- | :--- |
+| **Ideal Rocket Equation** | $`\Delta v = I_{sp} \cdot g_0 \cdot \ln\left(\frac{m_0}{m_f}\right)`$ | Dawn & Deep Space 1 | Dynamic $\Delta v$ gauge calculates available orbital maneuver budget based on selected fuel mass and engine $I_{sp}$. |
+| **Deep Space Optical Comms** | 1550 nm Near-Infrared Laser Pulse Transceiver | NASA DSOC (Psyche Mission) | 10x-100x science data downlink rates; susceptible to line-of-sight pointing errors during high-g maneuvers. |
+| **Solar Flare / CME Hazards** | Proton Flux > 100 MeV, Solar Particle Events (SPE) | NASA SOHO / Parker Solar Probe | Class X-12 CME triggers ionizing radiation warnings, hull stress telemetry, and active magnetic shield defense choices. |
+| **Planetary Environments** | Gravitational acceleration & atmospheric scale heights | Mars 2020 Perseverance / Artemis Gateway | 5 celestial destinations each feature accurate surface textures, orbital period curves, and landing hazard profiles. |
+| **Microgravity Buoyancy** | Multi-axis low-frequency station keeping | ISS Orbital Telemetry | Organic 6-DOF micro-drift physics ensures spacecraft feels natural and unconstrained in 3D orbit. |
+| **Apollo Quindar Tones** | 2525 Hz intro blip / 2475 Hz outro blip | Apollo Mission Control Comms | Procedurally synthesized sine tones preface Houston Flight Director telemetry announcements. |
+
+---
+
+## 🕹️ Flight Deck Controls & Hotkeys
+
+| Input Command | Keybinding | Operation & Context |
+| :--- | :---: | :--- |
+| **Forward Propulsion / Throttle** | <kbd>W</kbd> | Engages main ion engine burn; modulates lowpass sound filter cutoff from 180 Hz to 650 Hz. |
+| **Attitude & RCS Yaw Left / Right** | <kbd>A</kbd> / <kbd>D</kbd> | Fires compressed nitrogen cold-gas thrusters for lateral alignment with audible RCS bursts. |
+| **Retro-Brake / Deceleration** | <kbd>S</kbd> | Reverses thrust vector for orbital deceleration, gate pacing, and velocity bleed. |
+| **Tactical Camera Switch** | <kbd>C</kbd> | Cycles through **Chase Cam**, **Solar Transfer Tactical Map**, and **Cockpit Viewport**. |
+| **Target Interlock & Scan** | <kbd>E</kbd> | Arms scientific spectrometer, sample intake arm, landing radar, or orbital docking clamp. |
+| **Subsystem Power Routing** | <kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd> | Reroutes onboard bus power dynamically between **Thrust**, **Science Arrays**, and **Shields**. |
+| **Free 360° Orbit Inspection** | `Mouse Drag` | Full Three.js `OrbitControls` rotation to inspect spacecraft components, solar wings, and terrain. |
+| **Audio Master Mute Toggle** | `Top Header 🎵` / <kbd>M</kbd> | Mutes/unmutes procedural synthesizer with persistent state and animated cyan equalizer indicator. |
+
+---
+
+## 🛠️ Technology Stack & Engineering Highlights
+
+* **3D Graphics Engine:** [Three.js](https://threejs.org/) (r128 / ^0.186), custom PBR `MeshPhysicalMaterial` pipelines, gold aerogel foil shaders, and procedural particle engines.
+* **Post-Processing Pipeline:** `EffectComposer`, `RenderPass`, `ShaderPass`, and `UnrealBloomPass` for HDR thruster bloom and planetary atmosphere glow.
+* **Audio Synthesis:** Zero-dependency procedural **Web Audio API** (`AudioContext`, `BiquadFilterNode`, `OscillatorNode`, `GainNode`) for dynamic engine hum, RCS bursts, and Apollo Quindar tones.
+* **Typography & HUD Design:** Google Fonts (`Rajdhani`, `Orbitron`, `Space Grotesk`, `JetBrains Mono`), SVG vector instrumentation, and CSS glassmorphic backdrops.
+* **Deployment & Cloud:** Configured for Vercel multi-service hosting (`vercel.json`) with edge caching and static CDN asset routing.
+
+---
+
+## 💻 Local Setup & Development
+
+### 1. Quick Launch (Standalone / Zero Install)
+Double click **`START_GAME.bat`** (on Windows) or run the native Node server:
+```bash
+node server.js
+```
+Open **[http://localhost:8080](http://localhost:8080)** in any modern web browser.
+
+### 2. Full Development Environment
+```bash
+# Clone the repository
+git clone https://github.com/ripa2202053/mission-forge-project-aurora.git
+cd mission-forge-project-aurora
+
+# Start local server
+npm start
+```
+
+### 3. Vite Game Subsystem Development (Optional)
+```bash
+cd src/game
+npm install
+npm run dev
+```
+
+---
+
+## 🌐 Live Deployment Configuration
+
+This repository is optimized for one-click deployment across major cloud providers:
+
+* **Vercel:** Deploys instantly via `vercel.json` with multi-service routing (`app` for the primary 3D NASA experience, `game` for the Vite sub-campaign).
+* **GitHub Pages:** Fully static compatible—enable under **Settings > Pages > Deploy from branch (`main`)**.
+* **Docker / Node Container:** Supported via `server.js` with dynamic `process.env.PORT` binding.
+
+---
+
+## 👥 NASA Space Apps Challenge 2026 Team
+
+* **Project:** Mission Forge: Project Aurora
+* **Challenge Category:** Space Mission Game Design
+* **Mission Motto:** *"Leave the blue behind. Bring the science home."*
+
+---
+
+<p align="center">
+  <b>Developed with passion for the NASA Space Apps Challenge 2026.</b><br/>
+  <i>Exploring the frontier of deep space systems engineering and interactive science education.</i>
+</p>
