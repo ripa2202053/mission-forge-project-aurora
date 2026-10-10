@@ -2,6 +2,7 @@
 ### **NASA Space Apps Challenge 2026 // Category: Space Mission Game Design**
 
 [![NASA Space Apps 2026](https://img.shields.io/badge/NASA_Space_Apps-2026_Global_Challenge-0b3d91?style=for-the-badge&logo=nasa&logoColor=white)](https://www.spaceappschallenge.org/)
+[![Team: MathaiBlock](https://img.shields.io/badge/Team-MathaiBlock-00E5FF?style=for-the-badge&logo=spacex&logoColor=black)](#-nasa-space-apps-challenge-2026-team-mathaiblock)
 [![WebGL Three.js](https://img.shields.io/badge/3D_Engine-Three.js_r128-000000?style=for-the-badge&logo=three.js&logoColor=white)](https://threejs.org/)
 [![Web Audio API](https://img.shields.io/badge/Audio-Procedural_Web_Audio_API-cyan?style=for-the-badge)](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
 [![Vercel Deployment](https://img.shields.io/badge/Vercel-Production_Live-00E5FF?style=for-the-badge&logo=vercel&logoColor=black)](https://mission-forge-project-aurora.vercel.app)
@@ -232,11 +233,23 @@ This repository is optimized for one-click deployment across major cloud provide
 
 ---
 
-## 👥 NASA Space Apps Challenge 2026 Team
+## 👥 NASA Space Apps Challenge 2026 Team: MathaiBlock
 
-* **Project:** Mission Forge: Project Aurora
-* **Challenge Category:** Space Mission Game Design
-* **Mission Motto:** *"Leave the blue behind. Bring the science home."*
+<div align="center">
+
+<img src="assets/team-logo.png" alt="MathaiBlock Team Logo" width="220" style="border-radius: 20px; box-shadow: 0 0 35px rgba(0, 229, 255, 0.45); margin-bottom: 14px;" />
+
+# **MathaiBlock**
+### *“BUILDING SOLUTIONS BEYOND EARTH”*
+**NASA Space Apps Challenge 2026 Team**
+
+</div>
+
+* **Team Name:** **MathaiBlock**
+* **Project Title:** **MISSION FORGE: PROJECT AURORA**
+* **Challenge Track:** Space Mission Game Design
+* **Team Motto:** *“Building Solutions Beyond Earth”*
+* **Mission Vision:** *“Leave the blue behind. Bring the science home.”*
 
 ---
 
