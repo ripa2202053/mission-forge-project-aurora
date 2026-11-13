@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "e2c6392d-5843-4e71-a6b4-908d491cd3b3",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "E:\\Projects\\mission-forge-project-aurora-main\\mission-forge-project-aurora-main\\mission-forge-workflow.json",
+  "output": "E:\\Projects\\mission-forge-project-aurora-main\\mission-forge-project-aurora-main\\mission-forge-archify-workflow.html",
+  "specification": {
+    "sha256": "06295cc7bde772bb1cac051a87ed4d8a20f411ff7dc02c33d2de2563c1149a00",
+    "bytes": 5352
+  },
+  "artifact": {
+    "sha256": "4b305b7061dcaf2f0be0cb7db83704ba93668342f7b6ba9fa644b947f149404c",
+    "bytes": 768831
+  }
+}

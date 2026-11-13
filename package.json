@@ -1,11 +1,12 @@
 {
-  "name": "mission-nasa-game",
+  "name": "project-aurora",
   "version": "1.0.0",
   "description": "**NASA Space Apps Challenge 2026 // Category: Space Mission Game Design**",
-  "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm test --prefix src/game",
+    "build": "npm --prefix src/game install && npm --prefix src/game run build",
+    "dev": "npm run dev --prefix src/game"
   },
   "keywords": [],
   "author": "",

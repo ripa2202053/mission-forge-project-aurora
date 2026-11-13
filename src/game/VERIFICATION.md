@@ -1,4 +1,4 @@
-# Verification — Mission Forge v2
+# Verification — Project Aurora v2
 
 ## Decision support and pilot onboarding — 2026-10-08
 

@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Aurora — Playable Runtime Workflow Diagram</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Rajdhani:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #020712;
+      --bg-card: rgba(8, 22, 42, 0.78);
+      --bg-card-hover: rgba(14, 34, 62, 0.92);
+      --cyan: #00e5ff;
+      --cyan-glow: rgba(0, 229, 255, 0.45);
+      --cyan-bright: #7df9ff;
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.4);
+      --amber: #f59e0b;
+      --amber-glow: rgba(245, 158, 11, 0.4);
+      --crimson: #ef4444;
+      --purple: #8b5cf6;
+      --line: rgba(56, 189, 248, 0.22);
+      --line-active: #00e5ff;
+      --text-dim: #7998ab;
+      --text-mid: #a0c4d7;
+      --text-bright: #f0fdf4;
+      --font-title: 'Rajdhani', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 18% 12%, rgba(0, 229, 255, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 82% 85%, rgba(139, 92, 246, 0.07) 0%, transparent 50%),
+        linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+      color: var(--text-bright);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Aerospace Header */
+    header.workflow-header {
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      background: rgba(3, 10, 22, 0.85);
+      backdrop-filter: blur(14px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand-bay {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1.5px solid var(--cyan);
+      box-shadow: 0 0 14px var(--cyan-glow), inset 0 0 10px rgba(0, 229, 255, 0.2);
+      display: grid;
+      place-items: center;
+      color: var(--cyan);
+      font-family: var(--font-title);
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .brand-text h1 {
+      font-family: var(--font-title);
+      font-size: 1.35rem;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .brand-text h1 span {
+      color: var(--cyan);
+      text-shadow: 0 0 10px var(--cyan-glow);
+    }
+
+    .brand-tag {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    /* Overview Lock Tag */
+    .overview-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: #86efac;
+    }
+
+    .overview-pill .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+      animation: pulse-dot 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.4); }
+    }
+
+    /* Master Controller Toolbar */
+    .controls-dock {
+      background: rgba(6, 17, 34, 0.95);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 229, 255, 0.08);
+    }
+
+    .btn-ctrl {
+      background: rgba(0, 229, 255, 0.1);
+      border: 1px solid rgba(0, 229, 255, 0.4);
+      border-radius: 4px;
+      color: var(--cyan-bright);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 8px 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .btn-ctrl:hover {
+      background: rgba(0, 229, 255, 0.24);
+      border-color: var(--cyan);
+      box-shadow: 0 0 16px var(--cyan-glow);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .btn-ctrl.primary {
+      background: linear-gradient(135deg, rgba(0, 229, 255, 0.25) 0%, rgba(2, 132, 199, 0.4) 100%);
+      border-color: var(--cyan);
+      color: #fff;
+    }
+
+    .btn-ctrl.primary.playing {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: var(--amber);
+      color: #fde047;
+      box-shadow: 0 0 16px var(--amber-glow);
+    }
+
+    .speed-select-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-dim);
+    }
+
+    .speed-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-mid);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 4px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .speed-btn.active {
+      background: rgba(0, 229, 255, 0.2);
+      border-color: var(--cyan);
+      color: var(--cyan-bright);
+    }
+
+    /* Main Diagram Stage - Fixed Overview (No Camera Zoom) */
+    main.diagram-stage {
+      flex: 1;
+      padding: 24px 32px 140px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .canvas-container {
+      width: 100%;
+      max-width: 1360px;
+      position: relative;
+      background: rgba(4, 13, 26, 0.65);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 12px;
+      padding: 28px 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75), inset 0 0 40px rgba(0, 229, 255, 0.03);
+    }
+
+    /* Swimlane Backdrop Guides */
+    .swimlanes-layer {
+      position: absolute;
+      inset: 28px 24px;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 0;
+    }
+
+    .swimlane-band {
+      flex: 1;
+      border-left: 2px solid rgba(0, 229, 255, 0.25);
+      background: linear-gradient(90deg, rgba(0, 229, 255, 0.03) 0%, transparent 60%);
+      border-radius: 4px;
+      padding: 6px 14px;
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .swimlane-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: rgba(56, 189, 248, 0.6);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* SVG Connector Overlay */
+    svg#workflowSvg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+      overflow: visible;
+    }
+
+    .wire-path {
+      fill: none;
+      stroke: rgba(56, 189, 248, 0.25);
+      stroke-width: 2;
+      stroke-dasharray: 4 4;
+      transition: stroke 0.3s ease, stroke-width 0.3s ease;
+    }
+
+    .wire-path.active {
+      stroke: var(--cyan);
+      stroke-width: 2.5;
+      stroke-dasharray: none;
+      filter: drop-shadow(0 0 6px var(--cyan-bright));
+    }
+
+    .wire-path.traversed {
+      stroke: rgba(16, 185, 129, 0.6);
+      stroke-width: 2;
+      stroke-dasharray: none;
+    }
+
+    /* Animated Glowing Photon Particle */
+    #signalParticle {
+      display: none;
+      fill: #ffffff;
+      filter: drop-shadow(0 0 8px var(--cyan)) drop-shadow(0 0 16px var(--cyan-bright));
+      transition: opacity 0.2s;
+    }
+
+    #signalParticleHalo {
+      display: none;
+      fill: none;
+      stroke: var(--cyan);
+      stroke-width: 2;
+      opacity: 0.75;
+      filter: drop-shadow(0 0 12px var(--cyan-bright));
+    }
+
+    /* Node Grid Layout (4 Lanes x Columns) */
+    .nodes-grid {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(4, 110px);
+      gap: 20px 24px;
+    }
+
+    /* Node Component Card */
+    .wf-node {
+      background: var(--bg-card);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+    }
+
+    .wf-node:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(0, 229, 255, 0.6);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 14px rgba(0, 229, 255, 0.25);
+    }
+
+    /* Node States */
+    .wf-node.pending {
+      opacity: 0.55;
+      filter: grayscale(0.2);
+    }
+
+    .wf-node.active {
+      opacity: 1 !important;
+      background: linear-gradient(135deg, rgba(8, 38, 70, 0.95) 0%, rgba(4, 20, 38, 0.98) 100%) !important;
+      border: 1.5px solid var(--cyan-bright) !important;
+      box-shadow: 0 0 30px var(--cyan-glow), inset 0 0 20px rgba(0, 229, 255, 0.25) !important;
+      transform: translateY(-3px) scale(1.02);
+      animation: node-ignite 1.8s infinite alternate ease-in-out;
+    }
+
+    @keyframes node-ignite {
+      0% { box-shadow: 0 0 20px rgba(0, 229, 255, 0.45), inset 0 0 15px rgba(0, 229, 255, 0.2); }
+      100% { box-shadow: 0 0 36px rgba(0, 229, 255, 0.8), inset 0 0 25px rgba(0, 229, 255, 0.4); }
+    }
+
+    .wf-node.active .node-step-badge {
+      background: var(--cyan);
+      color: #020814;
+      font-weight: 800;
+      box-shadow: 0 0 12px var(--cyan);
+    }
+
+    .wf-node.completed {
+      opacity: 0.92;
+      border-color: rgba(16, 185, 129, 0.55);
+      background: rgba(6, 26, 32, 0.8);
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.2);
+    }
+
+    .wf-node.completed .node-step-badge {
+      background: rgba(16, 185, 129, 0.25);
+      color: #86efac;
+      border-color: rgba(16, 185, 129, 0.6);
+    }
+
+    /* Node Card Sub-elements */
+    .node-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .node-step-badge {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    .node-type-icon {
+      font-size: 0.9rem;
+    }
+
+    .node-title {
+      font-family: var(--font-title);
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      line-height: 1.15;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .node-sublabel {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      line-height: 1.35;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .node-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .node-status-text {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .node-tag {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      padding: 1px 5px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-mid);
+    }
+
+    /* Fixed Bottom Telemetry / Node Inspector Panel */
+    .inspector-dock {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(1200px, 94vw);
+      background: rgba(5, 14, 28, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 22px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 229, 255, 0.12);
+      display: grid;
+      grid-template-columns: 280px 1fr 240px;
+      gap: 20px;
+      align-items: center;
+      z-index: 60;
+    }
+
+    .insp-col-1 h4 {
+      font-family: var(--font-title);
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      color: var(--cyan);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .insp-col-1 .insp-current-node {
+      font-family: var(--font-title);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .insp-col-1 .insp-file-path {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-dim);
+    }
+
+    .insp-col-2 {
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0 18px;
+    }
+
+    .insp-col-2 .insp-label {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .insp-col-2 .insp-desc {
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: #cbd5e1;
+    }
+
+    .insp-col-3 {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .insp-metric-row {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+    }
+
+    .insp-metric-row span:first-child { color: var(--text-dim); }
+    .insp-metric-row span:last-child { color: var(--cyan-bright); font-weight: 600; }
+
+    /* Keyboard shortcuts footnote */
+    .keyboard-shortcuts {
+      position: absolute;
+      bottom: 8px;
+      right: 28px;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      display: flex;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .keyboard-shortcuts kbd {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 5px;
+      border-radius: 3px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--cyan);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Aerospace Bar -->
+  <header class="workflow-header">
+    <div class="brand-bay">
+      <div class="brand-icon">▲</div>
+      <div class="brand-text">
+        <h1>PROJECT <span>AURORA</span> // WORKFLOW</h1>
+        <div class="brand-tag">Runtime Signal Architecture & Simulation Pipeline</div>
+      </div>
+    </div>
+
+    <!-- 100% Overview Lock Badge -->
+    <div class="overview-pill">
+      <span class="dot"></span>
+      <span>100% FULL OVERVIEW LOCK (NO ZOOM DRIFT)</span>
+    </div>
+
+    <!-- Playback Control Toolbar -->
+    <div class="controls-dock">
+      <button class="btn-ctrl primary" id="btnPlayPause">
+        <span id="playIcon">▶</span>
+        <span id="playText">PLAY WORKFLOW</span>
+      </button>
+
+      <button class="btn-ctrl" id="btnReplay" title="Replay from Step 1 (R)">
+        <span>↺</span> REPLAY
+      </button>
+
+      <button class="btn-ctrl" id="btnPrev" title="Previous Step (←)">
+        <span>⏮</span> STEP
+      </button>
+
+      <button class="btn-ctrl" id="btnNext" title="Next Step (→)">
+        STEP <span>⏭</span>
+      </button>
+
+      <div class="speed-select-wrap">
+        <span>SPEED:</span>
+        <button class="speed-btn active" data-speed="1">1x</button>
+        <button class="speed-btn" data-speed="1.5">1.5x</button>
+        <button class="speed-btn" data-speed="2.5">2.5x</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Diagram Canvas Area (Fixed 100% Overview) -->
+  <main class="diagram-stage">
+    <div class="canvas-container" id="canvasContainer">
+      
+      <!-- 4 Semantic Swimlanes Background -->
+      <div class="swimlanes-layer">
+        <div class="swimlane-band">
+          <span class="swimlane-label">Lane 1: Client Portal & Three.js WebGL Interface</span>
+        </div>
+        <div class="swimlane-band">
+          <span class="swimlane-label">Lane 2: Autonomous Flight Transit & Orbital Triage Engine</span>
+        </div>
+        <div class="swimlane-band">
+          <span class="swimlane-label">Lane 3: Surface Game & NASA 3D Asset Simulation</span>
+        </div>
+        <div class="swimlane-band">
+          <span class="swimlane-label">Lane 4: NASA PDS Open Data & Supabase Multiplayer Hub</span>
+        </div>
+      </div>
+
+      <!-- Connecting SVG Wires Overlay -->
+      <svg id="workflowSvg" viewBox="0 0 1312 480" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="glowCyan" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.3"/>
+            <stop offset="50%" stop-color="#7df9ff" stop-opacity="1"/>
+            <stop offset="100%" stop-color="#00e5ff" stop-opacity="0.3"/>
+          </linearGradient>
+
+          <filter id="particleGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        <!-- Dynamic connecting paths populated via JS based on node coordinates -->
+        <g id="wiresGroup"></g>
+
+        <!-- Sequential Photon Traveling Particle -->
+        <circle id="signalParticleHalo" r="10"></circle>
+        <circle id="signalParticle" r="5"></circle>
+      </svg>
+
+      <!-- 10 Sequential Nodes Structured Across the 4 Lanes -->
+      <div class="nodes-grid" id="nodesGrid">
+
+        <!-- 1. Boot Hero (Lane 1, Col 1) -->
+        <div class="wf-node" id="node_boot" data-step="0" style="grid-column: 1; grid-row: 1;">
+          <div class="node-header">
+            <span class="node-step-badge">01 // BOOT</span>
+            <span class="node-type-icon">⚡</span>
+          </div>
+          <div class="node-title">Boot & 3D Hero</div>
+          <div class="node-sublabel">WebGL starfield & Skip CTA</div>
+          <div class="node-footer">
+            <span class="node-status-text">INIT</span>
+            <span class="node-tag">index.html</span>
+          </div>
+        </div>
+
+        <!-- 2. Destination Carousel (Lane 1, Col 2) -->
+        <div class="wf-node" id="node_carousel" data-step="1" style="grid-column: 2; grid-row: 1;">
+          <div class="node-header">
+            <span class="node-step-badge">02 // SELECT</span>
+            <span class="node-type-icon">🪐</span>
+          </div>
+          <div class="node-title">3D Carousel</div>
+          <div class="node-sublabel">Mars, Moon, Europa, Vesta</div>
+          <div class="node-footer">
+            <span class="node-status-text">ORBITAL</span>
+            <span class="node-tag">Screen 2</span>
+          </div>
+        </div>
+
+        <!-- 3. NASA PDS Telemetry (Lane 4, Col 2) -->
+        <div class="wf-node" id="node_pds" data-step="2" style="grid-column: 2; grid-row: 4;">
+          <div class="node-header">
+            <span class="node-step-badge">03 // NASA PDS</span>
+            <span class="node-type-icon">📡</span>
+          </div>
+          <div class="node-title">NASA Data Sync</div>
+          <div class="node-sublabel">Sol telemetry & GCR radiation</div>
+          <div class="node-footer">
+            <span class="node-status-text">API REST</span>
+            <span class="node-tag">nasa-api.js</span>
+          </div>
+        </div>
+
+        <!-- 4. Celestial Dossier (Lane 1, Col 3) -->
+        <div class="wf-node" id="node_dossier" data-step="3" style="grid-column: 3; grid-row: 1;">
+          <div class="node-header">
+            <span class="node-step-badge">04 // DOSSIER</span>
+            <span class="node-type-icon">📋</span>
+          </div>
+          <div class="node-title">Celestial Dossier</div>
+          <div class="node-sublabel">PDS specs & Quick Play</div>
+          <div class="node-footer">
+            <span class="node-status-text">VERIFIED</span>
+            <span class="node-tag">Screen 2 Sub 2</span>
+          </div>
+        </div>
+
+        <!-- 5. 3D Assembly Hangar (Lane 2, Col 3) -->
+        <div class="wf-node" id="node_hangar" data-step="4" style="grid-column: 3; grid-row: 2;">
+          <div class="node-header">
+            <span class="node-step-badge">05 // HANGAR</span>
+            <span class="node-type-icon">🛠️</span>
+          </div>
+          <div class="node-title">Assembly Hangar</div>
+          <div class="node-sublabel">NASA 3D Asset Inspector</div>
+          <div class="node-footer">
+            <span class="node-status-text">Δv BALANCE</span>
+            <span class="node-tag">Screen 3</span>
+          </div>
+        </div>
+
+        <!-- 6. Hohmann Flight Transit (Lane 2, Col 4) -->
+        <div class="wf-node" id="node_transit" data-step="5" style="grid-column: 4; grid-row: 2;">
+          <div class="node-header">
+            <span class="node-step-badge">06 // TRANSIT</span>
+            <span class="node-type-icon">🚀</span>
+          </div>
+          <div class="node-title">Hohmann Transfer</div>
+          <div class="node-sublabel">214-day flight cruise sim</div>
+          <div class="node-footer">
+            <span class="node-status-text">3D ORBIT</span>
+            <span class="node-tag">Screen 4</span>
+          </div>
+        </div>
+
+        <!-- 7. Solar CME Storm Triage (Lane 2, Col 5) -->
+        <div class="wf-node" id="node_cme" data-step="6" style="grid-column: 5; grid-row: 2;">
+          <div class="node-header">
+            <span class="node-step-badge">07 // CRISIS</span>
+            <span class="node-type-icon">⚠️</span>
+          </div>
+          <div class="node-title">Solar CME Triage</div>
+          <div class="node-sublabel">X-12 Deflector Shield</div>
+          <div class="node-footer">
+            <span class="node-status-text">15s DEFENSE</span>
+            <span class="node-tag">Lorentz Deflect</span>
+          </div>
+        </div>
+
+        <!-- 8. Martian Orbit Capture & Debrief (Lane 3, Col 5) -->
+        <div class="wf-node" id="node_capture" data-step="7" style="grid-column: 5; grid-row: 3;">
+          <div class="node-header">
+            <span class="node-step-badge">08 // CAPTURE</span>
+            <span class="node-type-icon">🎯</span>
+          </div>
+          <div class="node-title">Mars Insertion</div>
+          <div class="node-sublabel">1.4 km/s Retrograde Burn</div>
+          <div class="node-footer">
+            <span class="node-status-text">VICTORY</span>
+            <span class="node-tag">Debrief Modal</span>
+          </div>
+        </div>
+
+        <!-- 9. Surface Rover & Drone Sim (Lane 3, Col 4) -->
+        <div class="wf-node" id="node_surface" data-step="8" style="grid-column: 4; grid-row: 3;">
+          <div class="node-header">
+            <span class="node-step-badge">09 // SURFACE</span>
+            <span class="node-type-icon">🤖</span>
+          </div>
+          <div class="node-title">Perseverance Sim</div>
+          <div class="node-sublabel">Ingenuity scout & samples</div>
+          <div class="node-footer">
+            <span class="node-status-text">3D TERRAIN</span>
+            <span class="node-tag">world.js</span>
+          </div>
+        </div>
+
+        <!-- 10. Supabase Multi-Crew Cloud Sync (Lane 4, Col 4) -->
+        <div class="wf-node" id="node_cloud" data-step="9" style="grid-column: 4; grid-row: 4;">
+          <div class="node-header">
+            <span class="node-step-badge">10 // CLOUD</span>
+            <span class="node-type-icon">☁️</span>
+          </div>
+          <div class="node-title">Supabase Sync</div>
+          <div class="node-sublabel">Multi-crew station lock</div>
+          <div class="node-footer">
+            <span class="node-status-text">GLOBAL DB</span>
+            <span class="node-tag">supabase.js</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Persistent Bottom Node Details Inspector -->
+  <footer class="inspector-dock">
+    <div class="insp-col-1">
+      <h4>RUNTIME INSPECTOR</h4>
+      <div class="insp-current-node" id="inspNodeTitle">01 // Boot & 3D Hero</div>
+      <div class="insp-file-path" id="inspFilePath">Source: index.html (Lines 4225-4285)</div>
+    </div>
+
+    <div class="insp-col-2">
+      <div class="insp-label">STAGE OPERATION & TELEMETRY DISPATCH</div>
+      <div class="insp-desc" id="inspNodeDesc">
+        Application initializes Three.js deep starfield, procedural soundscape, and cosmic boot log sequence. Users can enter mission control directly or click SKIP INTRO ⏭ for instant zero-latency bypass.
+      </div>
+    </div>
+
+    <div class="insp-col-3">
+      <div class="insp-metric-row">
+        <span>SIGNAL STATE:</span>
+        <span id="inspSignalState">ACTIVE_PROCESSING</span>
+      </div>
+      <div class="insp-metric-row">
+        <span>EXECUTION STEP:</span>
+        <span id="inspStepMetric">1 OF 10 SEQUENTIAL</span>
+      </div>
+      <div class="insp-metric-row">
+        <span>VIEWPORT MODE:</span>
+        <span>100% FIXED OVERVIEW</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Floating Keyboard Hint -->
+  <div class="keyboard-shortcuts">
+    <span><kbd>SPACE</kbd> Play/Pause</span>
+    <span><kbd>R</kbd> Replay</span>
+    <span><kbd>→</kbd> Step Next</span>
+    <span><kbd>←</kbd> Step Prev</span>
+  </div>
+
+  <script>
+    // Sequential Workflow Step Definitions
+    const WORKFLOW_STEPS = [
+      {
+        id: 'node_boot',
+        title: '01 // Boot & 3D Hero',
+        file: 'index.html · Lines 4225-4285',
+        desc: 'Initializes WebGL starfield, Three.js celestial camera, and procedural cockpit audio. Provides direct Skip Intro ⏭ bypass for instant access.',
+        nextWire: 'wire_0_to_1',
+        metrics: { signal: 'INITIALIZING', step: '1 of 10' }
+      },
+      {
+        id: 'node_carousel',
+        title: '02 // 3D Destination Carousel',
+        file: 'index.html · Lines 4305-4420',
+        desc: 'Cylindrical 3D card carousel rotates celestial bodies in real-time space. User explores Mars, Moon, Earth, Europa, or asteroid destinations.',
+        nextWire: 'wire_1_to_2',
+        metrics: { signal: 'ORBIT_QUERY', step: '2 of 10' }
+      },
+      {
+        id: 'node_pds',
+        title: '03 // NASA PDS Data Sync',
+        file: 'src/game/src/nasa-api.js · Lines 1-120',
+        desc: 'Offline-first progressive engine fetches authentic NASA PDS datasets (Mars 2020 Perseverance Sol telemetry, LRO LEND radiation, Europa Clipper).',
+        nextWire: 'wire_2_to_3',
+        metrics: { signal: 'PDS_REST_SYNC', step: '3 of 10' }
+      },
+      {
+        id: 'node_dossier',
+        title: '04 // Celestial Mission Dossier',
+        file: 'index.html · Lines 4469-4578',
+        desc: 'Displays verified target atmospheric pressure, surface gravity, flight time, and Quick Launch 🚀 option. Shifts 3D globe to right side with cinematic ease.',
+        nextWire: 'wire_3_to_4',
+        metrics: { signal: 'TELEMETRY_LOCK', step: '4 of 10' }
+      },
+      {
+        id: 'node_hangar',
+        title: '05 // 3D Assembly Hangar & NASA 3D Asset Inspector',
+        file: 'index.html · Lines 4680-4880 & models/*.glb',
+        desc: 'Spacecraft configurator with 9 subsystem slots enforcing rocket equation mass limits. Includes interactive inspector for official NASA GLTF 3D models.',
+        nextWire: 'wire_4_to_5',
+        metrics: { signal: 'MASS_DV_VALID', step: '5 of 10' }
+      },
+      {
+        id: 'node_transit',
+        title: '06 // Hohmann Flight Transit Simulation',
+        file: 'index.html · Lines 4887-5005',
+        desc: 'Simulates 214-day Earth-to-Mars Hohmann transfer orbit with Sun at heliocentric center, chase camera, and realistic delta-v burns.',
+        nextWire: 'wire_5_to_6',
+        metrics: { signal: 'BURNING_TRANSFER', step: '6 of 10' }
+      },
+      {
+        id: 'node_cme',
+        title: '07 // Solar CME Storm & Defense Triage',
+        file: 'index.html · Lines 8952-9035',
+        desc: '15-second emergency triage challenge: Class X-12 shock front traveling at 1,850 km/s safely deflected via 24 kW superconducting magnetic shield.',
+        nextWire: 'wire_6_to_7',
+        metrics: { signal: 'LORENTZ_DEFLECT', step: '7 of 10' }
+      },
+      {
+        id: 'node_capture',
+        title: '08 // Martian Orbital Capture & Debrief',
+        file: 'index.html · Lines 5009-5130',
+        desc: 'Executes 1.4 km/s retrograde braking burn into stable 320 km Martian polar orbit. Displays flight scorecard and 3D educational debrief cards.',
+        nextWire: 'wire_7_to_8',
+        metrics: { signal: 'INSERTION_COMPLETE', step: '8 of 10' }
+      },
+      {
+        id: 'node_surface',
+        title: '09 // Surface Rover & Ingenuity Drone Sim',
+        file: 'src/game/src/world.js · Lines 40-280',
+        desc: 'Mounts 3D planetary terrain with Perseverance Rover model swap, airborne Ingenuity helicopter drone scouting, and rock core sample spectroscopy.',
+        nextWire: 'wire_8_to_9',
+        metrics: { signal: 'SURFACE_SURVEY', step: '9 of 10' }
+      },
+      {
+        id: 'node_cloud',
+        title: '10 // Supabase Multi-Crew Sync & Leaderboard',
+        file: 'src/game/src/supabase.js & src/game/src/crew.js',
+        desc: 'Real-time REST API synchronization: 4-officer station locking, shared Go/No-Go vote manifests, and persistent global hall-of-fame leaderboard.',
+        nextWire: null,
+        metrics: { signal: 'CLOUD_SYNCED', step: '10 of 10' }
+      }
+    ];
+
+    // State Variables
+    let currentStep = 0;
+    let isPlaying = false;
+    let playTimer = null;
+    let speedMultiplier = 1.0;
+    const BASE_TRANSIT_MS = 1400; // Time for particle to travel along wire
+
+    // DOM Handles
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const playIcon = document.getElementById('playIcon');
+    const playText = document.getElementById('playText');
+    const btnReplay = document.getElementById('btnReplay');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const wiresGroup = document.getElementById('wiresGroup');
+    const signalParticle = document.getElementById('signalParticle');
+    const signalParticleHalo = document.getElementById('signalParticleHalo');
+    const inspNodeTitle = document.getElementById('inspNodeTitle');
+    const inspFilePath = document.getElementById('inspFilePath');
+    const inspNodeDesc = document.getElementById('inspNodeDesc');
+    const inspSignalState = document.getElementById('inspSignalState');
+    const inspStepMetric = document.getElementById('inspStepMetric');
+
+    // Wire Path Calculations between Grid Nodes
+    function renderWorkflowWires() {
+      wiresGroup.innerHTML = '';
+      const svgRect = document.getElementById('workflowSvg').getBoundingClientRect();
+      const containerRect = document.getElementById('canvasContainer').getBoundingClientRect();
+
+      for (let i = 0; i < WORKFLOW_STEPS.length - 1; i++) {
+        const fromNode = document.getElementById(WORKFLOW_STEPS[i].id);
+        const toNode = document.getElementById(WORKFLOW_STEPS[i + 1].id);
+
+        if (!fromNode || !toNode) continue;
+
+        const r1 = fromNode.getBoundingClientRect();
+        const r2 = toNode.getBoundingClientRect();
+
+        // Coordinates relative to SVG canvas
+        const x1 = r1.left + r1.width / 2 - containerRect.left;
+        const y1 = r1.top + r1.height / 2 - containerRect.top;
+        const x2 = r2.left + r2.width / 2 - containerRect.left;
+        const y2 = r2.top + r2.height / 2 - containerRect.top;
+
+        // Create smooth curved or orthogonal connector
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.id = `wire_${i}_to_${i+1}`;
+        path.classList.add('wire-path');
+
+        let d = '';
+        if (Math.abs(y1 - y2) < 20) {
+          // Horizontal direct line
+          d = `M ${x1} ${y1} L ${x2} ${y2}`;
+        } else if (Math.abs(x1 - x2) < 20) {
+          // Vertical direct line
+          d = `M ${x1} ${y1} L ${x2} ${y2}`;
+        } else {
+          // Smooth S-curve bezier
+          const midX = (x1 + x2) / 2;
+          d = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
+        }
+
+        path.setAttribute('d', d);
+        wiresGroup.appendChild(path);
+      }
+    }
+
+    // Update Node Visual States (Strictly Sequential: ONE active glowing node)
+    function applyStepState(stepIdx) {
+      currentStep = stepIdx;
+      const step = WORKFLOW_STEPS[stepIdx];
+
+      WORKFLOW_STEPS.forEach((s, idx) => {
+        const nodeEl = document.getElementById(s.id);
+        if (!nodeEl) return;
+
+        nodeEl.classList.remove('active', 'completed', 'pending');
+
+        if (idx === stepIdx) {
+          nodeEl.classList.add('active'); // ONLY this node glows!
+          const statusEl = nodeEl.querySelector('.node-status-text');
+          if (statusEl) statusEl.textContent = 'ACTIVE';
+        } else if (idx < stepIdx) {
+          nodeEl.classList.add('completed');
+          const statusEl = nodeEl.querySelector('.node-status-text');
+          if (statusEl) statusEl.textContent = 'VERIFIED';
+        } else {
+          nodeEl.classList.add('pending');
+          const statusEl = nodeEl.querySelector('.node-status-text');
+          if (statusEl) statusEl.textContent = 'QUEUED';
+        }
+      });
+
+      // Update Wire States
+      document.querySelectorAll('.wire-path').forEach((wp, wIdx) => {
+        wp.classList.remove('active', 'traversed');
+        if (wIdx < stepIdx) {
+          wp.classList.add('traversed');
+        }
+      });
+
+      // Update Inspector Panel
+      inspNodeTitle.textContent = step.title;
+      inspFilePath.textContent = `Source: ${step.file}`;
+      inspNodeDesc.textContent = step.desc;
+      inspSignalState.textContent = step.metrics.signal;
+      inspStepMetric.textContent = `${stepIdx + 1} OF ${WORKFLOW_STEPS.length} SEQUENTIAL`;
+    }
+
+    // Animate Glowing Photon along Wire from Step A to Step B
+    function animateSignalAlongWire(fromIdx, toIdx, onComplete) {
+      const wireId = `wire_${fromIdx}_to_${toIdx}`;
+      const wire = document.getElementById(wireId);
+
+      if (!wire) {
+        if (onComplete) onComplete();
+        return;
+      }
+
+      wire.classList.add('active');
+      const length = wire.getTotalLength();
+      signalParticle.style.display = 'block';
+      signalParticleHalo.style.display = 'block';
+
+      const duration = BASE_TRANSIT_MS / speedMultiplier;
+      const startTime = performance.now();
+
+      function stepFrame(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(1.0, elapsed / duration);
+
+        const point = wire.getPointAtLength(progress * length);
+        signalParticle.setAttribute('cx', point.x);
+        signalParticle.setAttribute('cy', point.y);
+        signalParticleHalo.setAttribute('cx', point.x);
+        signalParticleHalo.setAttribute('cy', point.y);
+
+        if (progress < 1.0) {
+          requestAnimationFrame(stepFrame);
+        } else {
+          wire.classList.remove('active');
+          wire.classList.add('traversed');
+          signalParticle.style.display = 'none';
+          signalParticleHalo.style.display = 'none';
+          if (onComplete) onComplete();
+        }
+      }
+
+      requestAnimationFrame(stepFrame);
+    }
+
+    // Advance to Next Step sequentially
+    function advanceToNextStep() {
+      if (currentStep < WORKFLOW_STEPS.length - 1) {
+        const fromStep = currentStep;
+        const toStep = currentStep + 1;
+
+        animateSignalAlongWire(fromStep, toStep, () => {
+          applyStepState(toStep);
+          if (isPlaying) {
+            scheduleNextAutoStep();
+          }
+        });
+      } else {
+        // Reached end of sequential flow
+        pausePlayback();
+      }
+    }
+
+    // Schedule next playback step
+    function scheduleNextAutoStep() {
+      if (!isPlaying) return;
+      const pauseDuration = (1200 / speedMultiplier);
+      playTimer = setTimeout(() => {
+        if (isPlaying) {
+          advanceToNextStep();
+        }
+      }, pauseDuration);
+    }
+
+    // Play/Pause Controls
+    function startPlayback() {
+      isPlaying = true;
+      playIcon.textContent = '⏸';
+      playText.textContent = 'PAUSE FLOW';
+      btnPlayPause.classList.add('playing');
+
+      if (currentStep >= WORKFLOW_STEPS.length - 1) {
+        applyStepState(0);
+      }
+
+      scheduleNextAutoStep();
+    }
+
+    function pausePlayback() {
+      isPlaying = false;
+      if (playTimer) clearTimeout(playTimer);
+      playIcon.textContent = '▶';
+      playText.textContent = 'RESUME FLOW';
+      btnPlayPause.classList.remove('playing');
+    }
+
+    function togglePlayPause() {
+      if (isPlaying) {
+        pausePlayback();
+      } else {
+        startPlayback();
+      }
+    }
+
+    function replayFromStart() {
+      pausePlayback();
+      applyStepState(0);
+      startPlayback();
+    }
+
+    function stepPrev() {
+      pausePlayback();
+      if (currentStep > 0) {
+        applyStepState(currentStep - 1);
+      }
+    }
+
+    function stepNext() {
+      pausePlayback();
+      advanceToNextStep();
+    }
+
+    // Wire event listeners
+    btnPlayPause.addEventListener('click', togglePlayPause);
+    btnReplay.addEventListener('click', replayFromStart);
+    btnPrev.addEventListener('click', stepPrev);
+    btnNext.addEventListener('click', stepNext);
+
+    // Speed selector buttons
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        speedMultiplier = parseFloat(btn.getAttribute('data-speed'));
+      });
+    });
+
+    // Node click to inspect
+    document.querySelectorAll('.wf-node').forEach(node => {
+      node.addEventListener('click', () => {
+        pausePlayback();
+        const stepIdx = parseInt(node.getAttribute('data-step'), 10);
+        applyStepState(stepIdx);
+      });
+    });
+
+    // Keyboard controls
+    window.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        togglePlayPause();
+      } else if (e.key === 'r' || e.key === 'R') {
+        replayFromStart();
+      } else if (e.key === 'ArrowRight') {
+        stepNext();
+      } else if (e.key === 'ArrowLeft') {
+        stepPrev();
+      }
+    });
+
+    // Initialize layout
+    window.addEventListener('load', () => {
+      renderWorkflowWires();
+      applyStepState(0);
+    });
+
+    window.addEventListener('resize', () => {
+      renderWorkflowWires();
+    });
+  </script>
+</body>
+</html>

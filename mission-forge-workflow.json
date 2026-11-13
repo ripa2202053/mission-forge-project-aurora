@@ -1,0 +1,82 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Project Aurora Runtime Workflow",
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "output": "mission-forge-archify-workflow.html"
+  },
+  "lanes": [
+    { "id": "portal", "label": "Main Portal (Three.js WebGL UI)" },
+    { "id": "simulation", "label": "Interplanetary Flight Engine" },
+    { "id": "surface", "label": "Surface Game (3D Physics & Rover)" },
+    { "id": "services", "label": "NASA PDS API & Supabase Cloud" }
+  ],
+  "phases": [
+    { "id": "initiation", "label": "1. Boot & Target Selection", "fromCol": 0, "toCol": 1 },
+    { "id": "architecture", "label": "2. Dossier & 3D Assembly", "fromCol": 2, "toCol": 3, "variant": "emphasis" },
+    { "id": "transit", "label": "3. Flight Transit & Triage", "fromCol": 4, "toCol": 4, "variant": "emphasis" },
+    { "id": "operations", "label": "4. Insertion & Surface Sync", "fromCol": 5, "toCol": 5, "variant": "dashed" }
+  ],
+  "groups": [
+    { "id": "grp_portal", "label": "Client Interface Pipeline", "lane": "portal", "fromCol": 0, "toCol": 2 },
+    { "id": "grp_flight", "label": "Autonomous Flight Engine", "lane": "simulation", "fromCol": 3, "toCol": 5, "variant": "emphasis" },
+    { "id": "grp_expedition", "label": "Surface Rover Simulation", "lane": "surface", "fromCol": 5, "toCol": 5 },
+    { "id": "grp_cloud", "label": "Telemetry & Multiplayer Hub", "lane": "services", "fromCol": 1, "toCol": 5, "variant": "dashed" }
+  ],
+  "mainPath": [
+    "boot_hero",
+    "dest_carousel",
+    "nasa_pds",
+    "mission_dossier",
+    "assembly_hangar",
+    "hohmann_transit",
+    "cme_mitigation",
+    "mars_insertion",
+    "surface_rover",
+    "cloud_sync"
+  ],
+  "nodes": [
+    { "id": "boot_hero", "lane": "portal", "col": 0, "type": "frontend", "label": "Boot & 3D Hero", "sublabel": "WebGL starfield & audio", "width": 140 },
+    { "id": "dest_carousel", "lane": "portal", "col": 1, "type": "frontend", "label": "3D Carousel", "sublabel": "Orbit views & targets", "tag": "orbital view", "width": 140 },
+    { "id": "nasa_pds", "lane": "services", "col": 1, "type": "cloud", "label": "NASA PDS Data", "sublabel": "Sol telemetry & radiation", "tag": "offline-first", "width": 140 },
+    { "id": "mission_dossier", "lane": "portal", "col": 2, "type": "frontend", "label": "Celestial Dossier", "sublabel": "NASA specs & trajectory", "width": 140 },
+    { "id": "assembly_hangar", "lane": "simulation", "col": 3, "type": "backend", "label": "3D Hangar Dock", "sublabel": "9 subsystems & mass Δv", "tag": "mass & delta-v", "width": 140 },
+    { "id": "hohmann_transit", "lane": "simulation", "col": 4, "type": "backend", "label": "Hohmann Transit", "sublabel": "Multi-stage orbital cruise", "width": 140 },
+    { "id": "cme_mitigation", "lane": "surface", "col": 4, "type": "security", "label": "Solar CME Triage", "sublabel": "Deflector shield active", "tag": "15s reaction", "width": 140 },
+    { "id": "mars_insertion", "lane": "simulation", "col": 5, "type": "backend", "label": "Martian Capture", "sublabel": "Retrograde capture burn", "tag": "victory debrief", "width": 140 },
+    { "id": "surface_rover", "lane": "surface", "col": 5, "type": "frontend", "label": "Surface Rover Sim", "sublabel": "Perseverance & drone sim", "tag": "spectroscopy", "width": 140 },
+    { "id": "cloud_sync", "lane": "services", "col": 5, "type": "database", "label": "Supabase Cloud", "sublabel": "Station locking & scores", "tag": "real-time", "width": 140 }
+  ],
+  "edges": [
+    { "id": "e_boot_to_carousel", "from": "boot_hero", "to": "dest_carousel", "variant": "default", "label": "initialize" },
+    { "id": "e_carousel_to_pds", "from": "dest_carousel", "to": "nasa_pds", "variant": "dashed", "label": "query API" },
+    { "id": "e_pds_to_dossier", "from": "nasa_pds", "to": "mission_dossier", "variant": "emphasis", "label": "telemetry sync" },
+    { "id": "e_dossier_to_hangar", "from": "mission_dossier", "to": "assembly_hangar", "variant": "emphasis", "label": "confirm craft" },
+    { "id": "e_hangar_to_transit", "from": "assembly_hangar", "to": "hohmann_transit", "variant": "default", "label": "commence burn" },
+    { "id": "e_transit_to_cme", "from": "hohmann_transit", "to": "cme_mitigation", "variant": "security", "label": "X-12 CME event" },
+    { "id": "e_cme_to_insertion", "from": "cme_mitigation", "to": "mars_insertion", "variant": "emphasis", "label": "orbital capture" },
+    { "id": "e_insertion_to_surface", "from": "mars_insertion", "to": "surface_rover", "variant": "emphasis", "label": "touchdown" },
+    { "id": "e_surface_to_cloud", "from": "surface_rover", "to": "cloud_sync", "variant": "default", "label": "manifest save" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Orbital Campaign Architecture",
+      "items": [
+        "Four seamless screens: Boot Hero ➔ Destinations ➔ Assembly ➔ Interplanetary Transit",
+        "Physical NASA 3D GLTF models loaded directly into Three.js WebGL scenes"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Autonomous Flight & Telemetry",
+      "items": [
+        "Real-time rocket equation delta-v calculations with authentic NASA PDS datasets",
+        "Dynamic multi-crew station locking and cloud leaderboard synchronization"
+      ]
+    }
+  ]
+}

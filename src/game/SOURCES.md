@@ -4,6 +4,22 @@
 
 NASA, [Cracks in Ancient Martian Mud Surprise NASA's Curiosity Rover Team](https://www.nasa.gov/missions/mars-science-laboratory/curiosity-rover/cracks-in-ancient-martian-mud-surprise-nasas-curiosity-rover-team/), consulted 2026-10-07. This informs the interpretation of clay/sulfate minerals and changing water-related environments. The game does **not** import measured spectra from this article. Training curves, indices, uncertainties, sites and route schedules are authored synthetic values. See CAMPAIGN.md for model limitations.
 
+## NASA 3D Models and Visual Resources (NASA-3D-Resources)
+
+The simulation integrates authentic, open-source 3D models from the official [NASA 3D Resources Repository](https://github.com/nasa/NASA-3D-Resources) (NASA / JPL / GSFC / ARC public domain release):
+
+| Asset | Source / Subdirectory in NASA-3D-Resources | In-Game Mission Usage |
+|---|---|---|
+| `models/Perseverance.glb` | `3D Models/Mars 2020 Perseverance Rover` | Mars Stage 3 & 4 Surface Exploration & Sample Return Rover |
+| `models/Ingenuity.glb` | `3D Models/Ingenuity Mars Helicopter` | Mars Stage 4 Crater Floor Aerial Scout Drone |
+| `models/AsteroidBennu.glb` | `3D Models/1999 RQ36 asteroid` | Vesta / Asteroid Approach & Celestial Topography Mesh |
+| `models/ApolloLunarModule.glb` | `3D Models/Apollo Lunar Module` | Moon Stage 4 Artemis Outpost & Precision Landing Site |
+| `models/ISS.glb` | `3D Models/International Space Station (ISS) (A)` | Earth / LEO Stage 5 Orbital Rendezvous & Station Docking |
+| `models/DSN70m.glb` | `3D Models/Deep Space Network 70-meter` | Deep Space Network Ground Station Radar Tracking Array |
+| `models/Dawn.glb` | `3D Models/Dawn` | Vesta Campaign & Hangar 3D Asset Inspector |
+| `models/DeepSpace1.glb` | `3D Models/Deep Space 1` | Orbital Bay Explorer Spacecraft & Assembly Hangar |
+| `models/PrimaryIonDrive.glb` | `3D Models/PrimaryIonDrive` | Xenon Ion Thruster Propulsion Subsystem Inspection |
+
 ## Planet textures bundled with the game
 
 | Local asset | Source and credit |

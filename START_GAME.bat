@@ -1,7 +1,7 @@
 @echo off
-title MISSION FORGE - PROJECT AURORA
+title PROJECT AURORA
 echo ========================================================
-echo   STARTING MISSION FORGE - PROJECT AURORA SERVER
+echo   STARTING PROJECT AURORA SERVER
 echo ========================================================
 echo Server starting at http://localhost:8080/ ...
 cd /d "%~dp0"

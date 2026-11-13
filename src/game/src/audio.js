@@ -1,5 +1,5 @@
 /**
- * MISSION FORGE: PROJECT AURORA
+ * PROJECT AURORA
  * NASA-Style Interactive Procedural Audio System & Cinematic Soundscape Engine
  * Path: src/game/src/audio.js
  *
@@ -20,6 +20,23 @@
  *    - Global Master Volume / Mute toggle with localStorage persistence and audio context resumption.
  */
 
+export const BGM_TRACKS = {
+  main: {
+    id: 'main',
+    title: 'Theme 1: Aurora Prime',
+    subtitle: 'Majestic Space Exploration (Main Theme)',
+    src: './bgm/mission-forge-main.mp3',
+    fallbackSrc: '/assets/bgm/mission-forge-main.mp3'
+  },
+  alt: {
+    id: 'alt',
+    title: 'Theme 2: Solar Velocity',
+    subtitle: 'Dynamic Atmospheric & Action (Alt Theme)',
+    src: './bgm/mission-forge-alt.mp3',
+    fallbackSrc: '/assets/bgm/mission-forge-alt.mp3'
+  }
+};
+
 export class FlightAudio {
   constructor(){
     this.muted = false;
@@ -38,7 +55,19 @@ export class FlightAudio {
     this.windFilter = null;
     this.windGain = null;
 
-    // Cinematic In-Flight BGM & Tension Layer
+    // Cinematic In-Flight Dual BGM Engine
+    this.bgmVolume = 0.6;
+    this.bgmMode = 'adaptive'; // 'adaptive' | 'main' | 'alt' | 'playlist'
+    this.activeTrackId = 'main';
+    this.targetTrackId = 'main';
+    this.audioElements = { main: null, alt: null };
+    this.mediaSources = { main: null, alt: null };
+    this.bgmGains = { main: null, alt: null };
+    this.bgmDuckGain = null;
+    this.bgmMasterBus = null;
+    this.lastAdaptiveEvaluation = 0;
+    this.initAudioElements();
+
     this.bgmGain = null;
     this.bgmPlaying = false;
     this.bgmNodes = [];
@@ -66,10 +95,55 @@ export class FlightAudio {
     this.commsBus = null;
   }
 
+  initAudioElements(){
+    if(typeof window === 'undefined' || typeof window.Audio === 'undefined') return;
+    try {
+      let storedMode = 'adaptive';
+      try {
+        storedMode = localStorage.getItem('aurora-bgm-mode') || 'adaptive';
+      } catch(e){}
+      this.bgmMode = storedMode;
+
+      ['main', 'alt'].forEach(key => {
+        if(!this.audioElements[key]){
+          const el = new Audio();
+          el.crossOrigin = 'anonymous';
+          el.preload = (key === this.activeTrackId) ? 'metadata' : 'none';
+          el.loop = this.bgmMode !== 'playlist';
+          el.src = BGM_TRACKS[key].src;
+
+          // Error fallback to absolute asset route (single attempt guard against loops)
+          el.addEventListener('error', () => {
+            if(el.src && !el._fallbackAttempted && !el.src.includes('assets/bgm')){
+              el._fallbackAttempted = true;
+              console.warn(`[FlightAudio] Primary BGM source error for ${key}, falling back to:`, BGM_TRACKS[key].fallbackSrc);
+              el.src = BGM_TRACKS[key].fallbackSrc;
+              el.load();
+            } else if (el._fallbackAttempted) {
+              console.warn(`[FlightAudio] BGM source unavailable for ${key}; continuing in silent mode.`);
+            }
+          });
+
+          // In playlist mode, automatically advance and loop seamlessly
+          el.addEventListener('ended', () => {
+            if(this.bgmMode === 'playlist'){
+              const next = key === 'main' ? 'alt' : 'main';
+              this.crossfadeToTrack(next, 2.0);
+            }
+          });
+
+          this.audioElements[key] = el;
+        }
+      });
+    } catch(err){
+      console.warn('initAudioElements error:', err);
+    }
+  }
+
   async start(){
     if(this.ctx){
       if(this.ctx.state === 'suspended') {
-        await this.ctx.resume();
+        try { await this.ctx.resume(); } catch(e){}
       }
       return;
     }
@@ -77,7 +151,7 @@ export class FlightAudio {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       this.ctx = new AudioCtx();
       if(this.ctx.state === 'suspended') {
-        await this.ctx.resume();
+        try { await this.ctx.resume(); } catch(e){}
       }
 
       // Master output bus
@@ -179,10 +253,36 @@ export class FlightAudio {
       this.commsBus.connect(this.master);
       this.radioNoise.start();
 
-      // Cinematic BGM Bus (running continuously at 30% volume)
+      // Cinematic BGM Bus (running continuously at balanced volume)
       this.bgmGain = this.ctx.createGain();
       this.bgmGain.gain.value = 0;
       this.bgmGain.connect(this.master);
+
+      // Duck gain node for Apollo comms ducking
+      this.bgmDuckGain = this.ctx.createGain();
+      this.bgmDuckGain.gain.value = 1.0;
+      this.bgmDuckGain.connect(this.bgmGain);
+
+      // Dual track gain nodes
+      this.bgmGains.main = this.ctx.createGain();
+      this.bgmGains.main.gain.value = (this.activeTrackId === 'main') ? 1.0 : 0.0001;
+      this.bgmGains.main.connect(this.bgmDuckGain);
+
+      this.bgmGains.alt = this.ctx.createGain();
+      this.bgmGains.alt.gain.value = (this.activeTrackId === 'alt') ? 1.0 : 0.0001;
+      this.bgmGains.alt.connect(this.bgmDuckGain);
+
+      // Connect MediaElementSource nodes if in browser
+      ['main', 'alt'].forEach(key => {
+        const el = this.audioElements[key];
+        if(el && !this.mediaSources[key]){
+          try {
+            const src = this.ctx.createMediaElementSource(el);
+            src.connect(this.bgmGains[key]);
+            this.mediaSources[key] = src;
+          } catch(err){}
+        }
+      });
 
       // Tension Layer Bus (Rhythmic sub-pulse)
       this.tensionGain = this.ctx.createGain();
@@ -366,17 +466,30 @@ export class FlightAudio {
   fadeInBgm(duration = 1.8){
     if(!this.ctx || this.muted) return;
     this.initBgm();
+    this.bgmPlaying = true;
+    const t = this.ctx.currentTime;
+    const targetGain = this.bgmVolume;
+
     if(this.bgmGain){
-      const t = this.ctx.currentTime;
       this.bgmGain.gain.cancelScheduledValues(t);
       this.bgmGain.gain.setValueAtTime(this.bgmGain.gain.value, t);
-      // Controlled base layer volume running continuously at 30%
-      this.bgmGain.gain.linearRampToValueAtTime(0.30, t + duration);
+      this.bgmGain.gain.linearRampToValueAtTime(targetGain, t + duration);
+    }
+
+    // Play active track element
+    const activeEl = this.audioElements[this.activeTrackId];
+    if(activeEl){
+      activeEl.volume = this.mediaSources[this.activeTrackId] ? 1.0 : targetGain;
+      activeEl.play().catch(()=>{});
     }
   }
 
   fadeOutBgm(duration = 1.8){
-    if(!this.ctx) return;
+    this.bgmPlaying = false;
+    if(!this.ctx){
+      Object.values(this.audioElements).forEach(el => el?.pause());
+      return;
+    }
     const t = this.ctx.currentTime;
     if(this.bgmGain){
       this.bgmGain.gain.cancelScheduledValues(t);
@@ -387,6 +500,132 @@ export class FlightAudio {
       this.tensionGain.gain.cancelScheduledValues(t);
       this.tensionGain.gain.setValueAtTime(this.tensionGain.gain.value, t);
       this.tensionGain.gain.linearRampToValueAtTime(0.0001, t + duration);
+    }
+    setTimeout(() => {
+      if(!this.bgmPlaying){
+        Object.values(this.audioElements).forEach(el => el?.pause());
+      }
+    }, duration * 1000);
+  }
+
+  crossfadeToTrack(targetTrackId, duration = 2.0){
+    if(!BGM_TRACKS[targetTrackId]) return;
+    if(this.activeTrackId === targetTrackId && this.bgmPlaying) return;
+
+    const prevTrackId = this.activeTrackId;
+    this.activeTrackId = targetTrackId;
+    this.targetTrackId = targetTrackId;
+
+    const fromEl = this.audioElements[prevTrackId];
+    const toEl = this.audioElements[targetTrackId];
+
+    if(toEl && !this.muted && this.bgmPlaying){
+      toEl.play().catch(()=>{});
+    }
+
+    if(this.ctx && this.bgmGains[prevTrackId] && this.bgmGains[targetTrackId]){
+      const t = this.ctx.currentTime;
+      this.bgmGains[prevTrackId].gain.cancelScheduledValues(t);
+      this.bgmGains[prevTrackId].gain.setValueAtTime(this.bgmGains[prevTrackId].gain.value, t);
+      this.bgmGains[prevTrackId].gain.linearRampToValueAtTime(0.0001, t + duration);
+
+      this.bgmGains[targetTrackId].gain.cancelScheduledValues(t);
+      this.bgmGains[targetTrackId].gain.setValueAtTime(this.bgmGains[targetTrackId].gain.value, t);
+      this.bgmGains[targetTrackId].gain.linearRampToValueAtTime(1.0, t + duration);
+
+      setTimeout(() => {
+        if(this.activeTrackId === targetTrackId && fromEl){
+          fromEl.pause();
+        }
+      }, duration * 1000);
+    } else {
+      if(fromEl) fromEl.pause();
+      if(toEl && !this.muted && this.bgmPlaying){
+        toEl.volume = this.bgmVolume * 0.35;
+        toEl.play().catch(()=>{});
+      }
+    }
+  }
+
+  setBgmMode(mode){
+    if(!['adaptive', 'main', 'alt', 'playlist'].includes(mode)) return;
+    this.bgmMode = mode;
+    try { localStorage.setItem('aurora-bgm-mode', mode); } catch(e){}
+
+    if(mode === 'main'){
+      this.crossfadeToTrack('main', 1.6);
+      if(this.audioElements.main) this.audioElements.main.loop = true;
+      if(this.audioElements.alt) this.audioElements.alt.loop = true;
+    } else if(mode === 'alt'){
+      this.crossfadeToTrack('alt', 1.6);
+      if(this.audioElements.main) this.audioElements.main.loop = true;
+      if(this.audioElements.alt) this.audioElements.alt.loop = true;
+    } else if(mode === 'playlist'){
+      if(this.audioElements.main) this.audioElements.main.loop = false;
+      if(this.audioElements.alt) this.audioElements.alt.loop = false;
+      if(!this.bgmPlaying){
+        this.crossfadeToTrack('main', 1.6);
+      }
+    } else {
+      // adaptive
+      if(this.audioElements.main) this.audioElements.main.loop = true;
+      if(this.audioElements.alt) this.audioElements.alt.loop = true;
+    }
+  }
+
+  cycleBgmMode(){
+    const modes = ['adaptive', 'main', 'alt', 'playlist'];
+    const curIdx = modes.indexOf(this.bgmMode);
+    const nextMode = modes[(curIdx + 1) % modes.length];
+    this.setBgmMode(nextMode);
+    return nextMode;
+  }
+
+  getBgmTrackTitle(){
+    if(this.bgmMode === 'adaptive'){
+      return `Adaptive Dynamic (${this.activeTrackId === 'main' ? 'Theme 1: Aurora Prime' : 'Theme 2: Solar Velocity'})`;
+    }
+    if(this.bgmMode === 'playlist'){
+      return `Playlist Loop (${this.activeTrackId === 'main' ? 'Track 1' : 'Track 2'})`;
+    }
+    return this.activeTrackId === 'main' ? 'Theme 1: Aurora Prime (Majestic)' : 'Theme 2: Solar Velocity (Action)';
+  }
+
+  getBgmButtonLabel(){
+    if(this.bgmMode === 'adaptive') return `BGM: ADAPTIVE [${this.activeTrackId === 'main' ? 'TH-1' : 'TH-2'}]`;
+    if(this.bgmMode === 'main') return 'BGM: THEME 1';
+    if(this.bgmMode === 'alt') return 'BGM: THEME 2';
+    return `BGM: PLAYLIST [${this.activeTrackId === 'main' ? '1' : '2'}]`;
+  }
+
+  getBgmDescription(){
+    if(this.bgmMode === 'adaptive'){
+      return 'Adaptive: automatically crossfades between Aurora Prime (Cruise/Orbit) and Solar Velocity (Re-entry/Action).';
+    }
+    if(this.bgmMode === 'main'){
+      return 'Theme 1: Aurora Prime — Majestic orchestral space odyssey theme.';
+    }
+    if(this.bgmMode === 'alt'){
+      return 'Theme 2: Solar Velocity — Dynamic action and atmospheric re-entry theme.';
+    }
+    return 'Playlist Loop: plays Theme 1 and Theme 2 sequentially in a seamless loop.';
+  }
+
+  duckBgm(ratio = 0.35, duration = 0.15){
+    if(this.ctx && this.bgmDuckGain){
+      const t = this.ctx.currentTime;
+      this.bgmDuckGain.gain.cancelScheduledValues(t);
+      this.bgmDuckGain.gain.setValueAtTime(this.bgmDuckGain.gain.value, t);
+      this.bgmDuckGain.gain.linearRampToValueAtTime(ratio, t + duration);
+    }
+  }
+
+  unduckBgm(duration = 0.35){
+    if(this.ctx && this.bgmDuckGain){
+      const t = this.ctx.currentTime;
+      this.bgmDuckGain.gain.cancelScheduledValues(t);
+      this.bgmDuckGain.gain.setValueAtTime(this.bgmDuckGain.gain.value, t);
+      this.bgmDuckGain.gain.linearRampToValueAtTime(1.0, t + duration);
     }
   }
 
@@ -558,6 +797,303 @@ export class FlightAudio {
     }, Math.round((dur - 0.005) * 1000));
   }
 
+  // Async promise-based Quindar tone generator (2525 Hz intro, 2475 Hz outro)
+  playQuindarTone(isStart = true){
+    if(!this.ctx || this.muted) return Promise.resolve();
+    try {
+      const freq = isStart ? 2525 : 2475;
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const dur = 0.22; // ~220ms authentic pulse
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.exponentialRampToValueAtTime(0.12 * (this.masterVolume ?? 0.8), t + 0.015);
+      gain.gain.setValueAtTime(0.12 * (this.masterVolume ?? 0.8), t + dur - 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+
+      osc.connect(gain);
+      gain.connect(this.master);
+
+      osc.start(t);
+      osc.stop(t + dur + 0.02);
+
+      return new Promise(resolve => setTimeout(resolve, Math.round(dur * 1000) + 30));
+    } catch (_) {
+      return Promise.resolve();
+    }
+  }
+
+  // Bandpass-filtered NASA VHF/UHF radio burst static
+  playRadioStatic(durationMs = 200){
+    if(!this.ctx || this.muted) return Promise.resolve();
+    try {
+      const t = this.ctx.currentTime;
+      const sampleCount = Math.max(128, Math.floor((this.ctx.sampleRate || 44100) * (durationMs / 1000)));
+      const buffer = this.ctx.createBuffer(1, sampleCount, this.ctx.sampleRate || 44100);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < sampleCount; i++) {
+        data[i] = (Math.random() * 2 - 1) * 0.16;
+      }
+
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(1400, t);
+      filter.Q.setValueAtTime(2.8, t);
+
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.08 * (this.masterVolume ?? 0.8), t);
+      gain.gain.linearRampToValueAtTime(0.001, t + (durationMs / 1000));
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.master);
+
+      noise.start(t);
+      return new Promise(resolve => setTimeout(resolve, durationMs));
+    } catch (_) {
+      return Promise.resolve();
+    }
+  }
+
+  // Tactical Mission Alert chime / klaxon
+  playMissionAlertBeep(severity = 'warning'){
+    if(!this.ctx || this.muted) return;
+    try {
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const freq = severity === 'critical' ? 880 : 587.33;
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(0.12 * (this.masterVolume ?? 0.8), t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+
+      osc.connect(gain);
+      gain.connect(this.master);
+      osc.start(t);
+      osc.stop(t + 0.31);
+    } catch (_) {}
+  }
+
+  // Heavy metallic docking latch capture sound with hydraulic burst
+  playDockingLatch() {
+    if (!this.ctx || this.muted) return Promise.resolve();
+    try {
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(90, t);
+      osc.frequency.exponentialRampToValueAtTime(42, t + 0.18);
+      gain.gain.setValueAtTime(0.25 * (this.masterVolume ?? 0.8), t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+      osc.connect(gain);
+      gain.connect(this.master);
+      osc.start(t);
+      osc.stop(t + 0.3);
+
+      this.playRadioStatic(180);
+      return new Promise(resolve => setTimeout(resolve, 300));
+    } catch (_) {
+      return Promise.resolve();
+    }
+  }
+
+  // Supersonic parachute canopy deploy crack & sonic boom
+  playParachuteDeploy() {
+    if (!this.ctx || this.muted) return Promise.resolve();
+    try {
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(140, t);
+      osc.frequency.exponentialRampToValueAtTime(32, t + 0.38);
+      gain.gain.setValueAtTime(0.35 * (this.masterVolume ?? 0.8), t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.44);
+      osc.connect(gain);
+      gain.connect(this.master);
+      osc.start(t);
+      osc.stop(t + 0.45);
+      return new Promise(resolve => setTimeout(resolve, 450));
+    } catch (_) {
+      return Promise.resolve();
+    }
+  }
+
+  // Tactical power shunting capacitor whine
+  playPowerShunt() {
+    if (!this.ctx || this.muted) return;
+    try {
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(320, t);
+      osc.frequency.exponentialRampToValueAtTime(980, t + 0.22);
+      gain.gain.setValueAtTime(0.12 * (this.masterVolume ?? 0.8), t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+      osc.connect(gain);
+      gain.connect(this.master);
+      osc.start(t);
+      osc.stop(t + 0.26);
+    } catch (_) {}
+  }
+
+  // Active LIDAR Sonar ping for surface navigation in dust storms & lunar shadows
+  playLidarPing() {
+    if (!this.ctx || this.muted) return Promise.resolve();
+    try {
+      const t = this.ctx.currentTime;
+      // High-frequency sonar chirp (1800 Hz -> 600 Hz)
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1800, t);
+      osc.frequency.exponentialRampToValueAtTime(600, t + 0.35);
+
+      gain.gain.setValueAtTime(0.2 * (this.masterVolume ?? 0.8), t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+
+      osc.connect(gain);
+      gain.connect(this.master);
+      osc.start(t);
+      osc.stop(t + 0.52);
+
+      return new Promise(resolve => setTimeout(resolve, 380));
+    } catch (_) {
+      return Promise.resolve();
+    }
+  }
+
+  // Ingenuity helicopter twin-rotor modulated acoustic hum
+  playDroneRotor(active = true) {
+    if (!this.ctx || this.muted) return;
+    try {
+      if (!active) {
+        if (this._rotorOsc) {
+          try { this._rotorOsc.stop(); this._rotorOsc.disconnect(); } catch (_) {}
+          this._rotorOsc = null;
+        }
+        return;
+      }
+
+      if (this._rotorOsc) return;
+      const t = this.ctx.currentTime;
+      this._rotorOsc = this.ctx.createOscillator();
+      this._rotorGain = this.ctx.createGain();
+      this._rotorOsc.type = 'sawtooth';
+      this._rotorOsc.frequency.setValueAtTime(85, t); // 85 Hz helicopter rotor rotation rate
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(320, t);
+
+      this._rotorGain.gain.setValueAtTime(0.08 * (this.masterVolume ?? 0.8), t);
+      this._rotorOsc.connect(filter);
+      filter.connect(this._rotorGain);
+      this._rotorGain.connect(this.master);
+      this._rotorOsc.start(t);
+    } catch (_) {}
+  }
+
+  // Aerospace R&D tech-tree research commit chord chime
+  playResearchCommit() {
+    if (!this.ctx || this.muted) return;
+    try {
+      const t = this.ctx.currentTime;
+      // Ascending C-major arpeggio (C5: 523Hz, E5: 659Hz, G5: 784Hz, C6: 1046Hz)
+      const freqs = [523.25, 659.25, 783.99, 1046.50];
+      freqs.forEach((freq, idx) => {
+        const noteTime = t + idx * 0.08;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, noteTime);
+
+        gain.gain.setValueAtTime(0.001, noteTime);
+        gain.gain.linearRampToValueAtTime(0.12 * (this.masterVolume ?? 0.8), noteTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.45);
+
+        osc.connect(gain);
+        gain.connect(this.master);
+        osc.start(noteTime);
+        osc.stop(noteTime + 0.48);
+      });
+    } catch (_) {}
+  }
+
+  // Dynamic astronaut biometric heartbeat and helmet muffle filter
+  updateBiometricTension(heartrateBpm = 80, emergencyLevel = 0) {
+    if (!this.ctx || this.muted) return;
+    try {
+      if (emergencyLevel <= 0.05) {
+        this.stopBiometricTension();
+        return;
+      }
+
+      const t = this.ctx.currentTime;
+      const bpm = Math.min(145, Math.max(60, heartrateBpm));
+      const intervalSec = 60 / bpm;
+
+      if (!this._heartbeatGain) {
+        this._heartbeatGain = this.ctx.createGain();
+        this._heartbeatGain.connect(this.master);
+      }
+
+      this._heartbeatGain.gain.setValueAtTime(Math.min(0.25, emergencyLevel * 0.22 * (this.masterVolume ?? 0.8)), t);
+
+      // Trigger dual-sine lub-dub pulse on heartbeat schedule
+      if (!this._lastHeartbeatTime || t - this._lastHeartbeatTime >= intervalSec) {
+        this._lastHeartbeatTime = t;
+
+        // "Lub" (lower sub-bass, 55 Hz)
+        const osc1 = this.ctx.createOscillator();
+        const g1 = this.ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(55, t);
+        osc1.frequency.exponentialRampToValueAtTime(38, t + 0.12);
+        g1.gain.setValueAtTime(0.8, t);
+        g1.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+        osc1.connect(g1);
+        g1.connect(this._heartbeatGain);
+        osc1.start(t);
+        osc1.stop(t + 0.15);
+
+        // "Dub" (slightly higher, 68 Hz, +110ms offset)
+        const osc2 = this.ctx.createOscillator();
+        const g2 = this.ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(68, t + 0.11);
+        osc2.frequency.exponentialRampToValueAtTime(42, t + 0.22);
+        g2.gain.setValueAtTime(0.65, t + 0.11);
+        g2.gain.exponentialRampToValueAtTime(0.001, t + 0.24);
+        osc2.connect(g2);
+        g2.connect(this._heartbeatGain);
+        osc2.start(t + 0.11);
+        osc2.stop(t + 0.25);
+      }
+    } catch (_) {}
+  }
+
+  stopBiometricTension() {
+    if (this._heartbeatGain) {
+      try {
+        if (this.ctx) {
+          this._heartbeatGain.gain.setValueAtTime(0, this.ctx.currentTime);
+        }
+      } catch (_) {}
+    }
+  }
+
   // Occasional authentic NASA Apollo comms snippets
   playRadioSnippet(){
     if(!this.ctx || this.muted || !this.voice) return;
@@ -647,15 +1183,29 @@ export class FlightAudio {
      -------------------------------------------------------------------------- */
   toggle(){
     this.muted = !this.muted;
+    if(this.ctx && this.ctx.state === 'suspended'){
+      this.ctx.resume().catch(()=>{});
+    }
     if(this.master && this.ctx){
-      this.master.gain.setTargetAtTime(this.muted ? 0 : 0.5, this.ctx.currentTime, 0.1);
+      this.master.gain.setTargetAtTime(this.muted ? 0 : 0.5, this.ctx.currentTime, 0.05);
     }
     if(this.muted){
       this.stopKlaxon();
       if(this.windGain && this.ctx){
-        this.windGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.1);
+        this.windGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.05);
       }
       if(typeof window !== 'undefined') window.speechSynthesis?.cancel();
+      Object.values(this.audioElements).forEach(el => el?.pause());
+    } else {
+      if(!this.bgmPlaying){
+        this.fadeInBgm(1.5);
+      } else {
+        const el = this.audioElements[this.activeTrackId];
+        if(el && el.paused) el.play().catch(()=>{});
+        if(this.bgmGain && this.ctx){
+          this.bgmGain.gain.setTargetAtTime(this.bgmVolume, this.ctx.currentTime, 0.1);
+        }
+      }
     }
     return !this.muted;
   }
@@ -777,6 +1327,23 @@ export class FlightAudio {
     if(name === 'transition'){
       this.tone(80, 2.2, 'sine', 0.2, 850);
     }
+    if(name === 'shield'){
+      this.tone(160, 0.38, 'sine', 0.16, 240);
+      setTimeout(() => this.tone(380, 0.45, 'triangle', 0.11, 140), 60);
+      setTimeout(() => this.tone(520, 0.3, 'sine', 0.08, 0), 120);
+    }
+    if(name === 'shield_deflect'){
+      this.tone(480, 0.12, 'sawtooth', 0.1, -180);
+      this.tone(880, 0.08, 'sine', 0.09, -320);
+    }
+    if(name === 'sensor_stream'){
+      this.tone(1150, 0.06, 'sine', 0.08, 220);
+      setTimeout(() => this.tone(1480, 0.05, 'sine', 0.07, -180), 45);
+    }
+    if(name === 'solar_storm'){
+      this.tone(65, 1.8, 'sawtooth', 0.22, 120);
+      setTimeout(() => this.tone(140, 1.2, 'triangle', 0.18, -60), 180);
+    }
   }
 
   speak(text, onEnd = null){
@@ -785,21 +1352,60 @@ export class FlightAudio {
       return;
     }
     window.speechSynthesis.cancel();
-    const message = new SpeechSynthesisUtterance(text);
-    message.rate = 0.97;
-    message.pitch = 0.86;
-    message.volume = 0.7;
-    if(onEnd){
-      message.onend = onEnd;
-      message.onerror = onEnd;
+
+    // Clean and simplify technical abbreviations so the voice reads clear, natural English
+    let clean = text
+      .replace(/W\/S/g, 'W or S')
+      .replace(/A\/D/g, 'A or D')
+      .replace(/↑\/↓/g, 'up and down arrows')
+      .replace(/m\/s/g, 'meters per second')
+      .replace(/km\/s/g, 'kilometers per second')
+      .replace(/km\b/g, 'kilometers')
+      .replace(/AU\b/g, 'astronomical units')
+      .replace(/[·•→—–]/g, ', ')
+      .replace(/[\(\)\[\]]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const message = new SpeechSynthesisUtterance(clean);
+    message.rate = 0.88; // Slower, clearer, natural cadence
+    message.pitch = 1.0; // Warm, natural human pitch (not robotic 0.86)
+    message.volume = 0.95; // Clear and easily heard over space ambience
+
+    // Softly duck cabin rumble and BGM while voice is speaking
+    const restoreGains = () => {
+      if(this.ctx && this.droneGain) this.droneGain.gain.setTargetAtTime(0.06, this.ctx.currentTime, 0.2);
+      if(this.ctx && this.noiseGain) this.noiseGain.gain.setTargetAtTime(0.016, this.ctx.currentTime, 0.2);
+      this.unduckBgm(0.35);
+    };
+
+    this.duckBgm(0.35, 0.15);
+    if(this.ctx && this.droneGain) {
+      this.droneGain.gain.setTargetAtTime(0.02, this.ctx.currentTime, 0.1);
     }
+    if(this.ctx && this.noiseGain) {
+      this.noiseGain.gain.setTargetAtTime(0.005, this.ctx.currentTime, 0.1);
+    }
+
+    message.onend = () => {
+      restoreGains();
+      if(onEnd) onEnd();
+    };
+    message.onerror = () => {
+      restoreGains();
+      if(onEnd) onEnd();
+    };
+
     const voices = window.speechSynthesis.getVoices();
-    message.voice = voices.find(v => v.lang === 'en-US' && /David|Guy|Mark|Google US/.test(v.name)) || voices.find(v => v.lang === 'en-US') || null;
+    message.voice = voices.find(v => v.lang === 'en-US' && /Natural|Zira|Jenny|Guy|Google US|Aria|David/i.test(v.name)) || voices.find(v => v.lang.startsWith('en')) || null;
     window.speechSynthesis.speak(message);
   }
 
   stopVoice(){
     window.speechSynthesis?.cancel();
+    this.unduckBgm(0.2);
+    if(this.ctx && this.droneGain) this.droneGain.gain.setTargetAtTime(0.06, this.ctx.currentTime, 0.1);
+    if(this.ctx && this.noiseGain) this.noiseGain.gain.setTargetAtTime(0.016, this.ctx.currentTime, 0.1);
   }
 
   /* --------------------------------------------------------------------------
@@ -902,5 +1508,49 @@ export class FlightAudio {
         this.tone(notes[Math.floor(Math.random() * notes.length)], 4.2, 'sine', 0.024);
       }
     }
+
+    // Intelligent Adaptive BGM evaluation during active flight
+    if(this.bgmMode === 'adaptive' && moving && this.bgmPlaying){
+      if(t - this.lastAdaptiveEvaluation > 1.2){
+        this.lastAdaptiveEvaluation = t;
+        const isDynamicFlight = (
+          Boolean(sim?.isReentry) ||
+          Boolean(sim?.isStorm) ||
+          (typeof sim?.speed === 'number' && sim.speed > 25) ||
+          (typeof sim?.heat === 'number' && sim.heat > 75) ||
+          (typeof sim?.hull === 'number' && sim.hull < 25) ||
+          (typeof sim?.fuel === 'number' && sim.fuel < 15) ||
+          (sim?.stage === 3 && sim?.destination?.surface) // Terminal planetary descent
+        );
+
+        const targetTrack = isDynamicFlight ? 'alt' : 'main';
+        if(this.activeTrackId !== targetTrack){
+          this.crossfadeToTrack(targetTrack, 2.2);
+        }
+      }
+    }
+  }
+
+  setMasterVolume(val) {
+    const level = Math.max(0, Math.min(1, Number(val) || 0.5));
+    if (this.master && this.ctx && !this.muted) {
+      this.master.gain.setTargetAtTime(level, this.ctx.currentTime, 0.05);
+    }
+  }
+
+  setBgmVolume(val) {
+    const level = Math.max(0, Math.min(1, Number(val) || 0.6));
+    this.bgmVolume = level;
+    if (this.bgmGain && this.ctx && !this.muted) {
+      this.bgmGain.gain.setTargetAtTime(level, this.ctx.currentTime, 0.05);
+    }
+    // Update direct element volume if media sources are not attached
+    Object.keys(this.audioElements).forEach(k => {
+      const el = this.audioElements[k];
+      if(el && !this.mediaSources[k]){
+        el.volume = (k === this.activeTrackId ? level : 0);
+      }
+    });
   }
 }
+

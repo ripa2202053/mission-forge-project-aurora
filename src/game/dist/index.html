@@ -1,16 +1,17 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#050d15"><meta name="description" content="Pilot a spacecraft, design an expedition, and bring the science home. A playable 3D space adventure."><title>Mission Forge — The Last Transmission</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#050d15"><meta name="description" content="Pilot a spacecraft, design an expedition, and bring the science home. A playable 3D space adventure."><title>Project Aurora — Interactive 3D Space Mission Game</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2306111c'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%2396eff0' stroke-width='2'/%3E%3Cpath d='M32 11L42 43L32 36L22 43Z' fill='%2396eff0'/%3E%3C/svg%3E">
-  <script type="module" crossorigin src="./assets/index-C1O1iC98.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/three-engine-C9iDPJQM.js">
-  <link rel="stylesheet" crossorigin href="./assets/index-Bu3XzZUz.css">
+  <script type="module" crossorigin src="./assets/index-D83Yu4B5.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/three-engine-Cc25TM6i.js">
+  <link rel="stylesheet" crossorigin href="./assets/index-B0T6RrC5.css">
 </head>
 <body>
 <div id="world"></div><div class="vignette"></div><div class="scanlines"></div><div id="impact-flash"></div>
 <svg class="hud-frame" viewBox="0 0 1440 900" preserveAspectRatio="none" aria-hidden="true"><path d="M18 65V30L38 12H360L389 29H1044L1076 12H1400L1426 33V290L1414 303V617L1426 630V866L1403 885H1036L1007 870H436L412 885H38L15 866V637L27 622V299L15 282V90"/><path class="frame-inner" d="M22 50V33L41 17H359M1079 17H1398L1420 36V65M22 829V862L41 879H219M1216 879H1400L1420 862V829"/><path class="frame-accent" d="M390 29H450M985 29H1042M436 870H494M951 870H1004"/></svg>
 <div id="loading" class="loading-screen" style="display:none !important; visibility:hidden !important; opacity:0 !important; pointer-events:none !important; width:0 !important; height:0 !important;" hidden></div>
+<div id="mode-select-screen" class="mode-select-screen" style="display:none;"></div>
 <header class="topbar">
   <button class="brand aerospace-hud-crest" id="home-button" aria-label="Mission selection">
     <div class="cyber-emblem-bay">
@@ -65,24 +66,159 @@
     </div>
     <div class="hud-brand-text-block">
       <div class="hud-titles-column">
-        <span class="hud-main-title">MISSION FORGE</span>
-        <span class="hud-sub-title">PROJECT AURORA</span>
+        <span class="hud-main-title">PROJECT AURORA</span>
       </div>
     </div>
   </button>
-  <nav aria-label="Main navigation"><button class="nav-button active" id="mission-nav">01 <span>MISSIONS</span></button><button class="nav-button" id="journal-button">02 <span>FLIGHT LOG</span></button><button class="nav-button" id="controls-button">03 <span>CONTROLS</span></button></nav>
+  <nav aria-label="Main navigation">
+    <button class="nav-button active" id="mission-nav" title="Mission Select &amp; System Overview">
+      <svg class="nav-svg" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2" fill="currentColor"/><path d="M8 2v2M8 12v2M2 8h2M12 8h2"/></svg>
+      <span>MISSIONS</span>
+    </button>
+    <button class="nav-button" id="codex-button" title="Planetary Science Codex &amp; Research Archives">
+      <svg class="nav-svg" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 3h12a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M5 3v11M8 7h4M8 10h3"/></svg>
+      <span>CODEX</span>
+    </button>
+    <button class="nav-button" id="leaderboard-button" title="Global Supabase Mission Leaderboard">
+      <svg class="nav-svg" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 13h12M4 13V7l2.5-3 2.5 3v6M9 13V5l2-2 2 2v8"/></svg>
+      <span>LEADERBOARD</span>
+    </button>
+    <button class="nav-button" id="journal-button" title="Flight Log &amp; Trajectory History">
+      <svg class="nav-svg" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="2" width="10" height="12" rx="1"/><path d="M5 5h6M5 8h6M5 11h4"/></svg>
+      <span>LOG</span>
+    </button>
+    <button class="nav-button" id="controls-button" title="Flight Controls &amp; Cockpit Telemetry Keys">
+      <svg class="nav-svg" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="4" width="12" height="8" rx="2"/><path d="M5 8h2M6 7v2M10 7.5h.01M11.5 8.5h.01"/></svg>
+      <span>CONTROLS</span>
+    </button>
+    <button class="nav-button" id="settings-button" title="Display &amp; Audio Settings">
+      <svg class="nav-svg" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4"/></svg>
+      <span>SETTINGS</span>
+    </button>
+  </nav>
   <div class="header-right">
-    <button class="aurora-return-btn" id="auroraReturnBtn" type="button">‹ RETURN TO DESTINATION SELECTOR</button>
-    <span class="connection"><i></i> UPLINK ESTABLISHED</span>
-    <button class="icon-button" id="sound-button" aria-label="Toggle sound" aria-pressed="true">♫</button>
-    <button class="icon-button" id="fullscreen-button" aria-label="Toggle fullscreen">⛶</button>
+    <button class="career-rank-btn" id="career-rank-btn" title="NASA Flight Certification & TRL Tech Tree (K)">
+      <span class="rank-star">🎖️</span>
+      <span class="rank-badge-text" id="rank-badge-text">RANK 01 · CADET</span>
+      <span class="rank-xp-pill" id="rank-xp-val">0 PTS</span>
+    </button>
+    <button class="crew-mode-toggle-btn" id="crew-mode-btn" title="Toggle 4-Player Multi-Crew Collaboration Mode (NASA Mission Control)">
+      <svg class="crew-mode-svg" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="5" r="2.5"/><path d="M3.5 13.5c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4"/><path d="M12.5 5a2 2 0 11-4 0M12 11c1.5.3 2.5 1.2 2.5 2.5"/></svg>
+      <span id="crew-mode-label">4-CREW TEAM</span>
+    </button>
+    <button class="aurora-return-btn" id="auroraReturnBtn" type="button" aria-label="Return to destination selector">‹ DESTINATIONS</button>
+    <button class="nasa-provenance-btn" id="nasa-provenance-toggle" title="Explore Authentic NASA Open Data &amp; PDS Datasets (N)"><span class="meatball-dot"></span> NASA DATA</button>
+    <button class="sound-toggle-btn" id="sound-button" aria-label="Toggle audio" title="Toggle audio (M)">
+      <svg class="sound-svg" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 6h3l4-3v10l-4-3H2V6z"/><path d="M12 5a4.5 4.5 0 010 6"/></svg>
+      <span class="sound-label">AUDIO ON</span>
+    </button>
   </div>
 </header>
+
+<!-- Mobile & Tablet Landscape Orientation Directive Overlay -->
+<div id="orientation-prompt" class="orientation-prompt" aria-live="polite">
+  <div class="orientation-card">
+    <div class="device-rotate-animation">
+      <svg class="phone-rotate-svg" viewBox="0 0 64 64" width="60" height="60" fill="none">
+        <rect x="18" y="10" width="28" height="44" rx="4" stroke="#38bdf8" stroke-width="2.5" fill="rgba(56, 189, 248, 0.08)"/>
+        <line x1="28" y1="48" x2="36" y2="48" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="32" cy="16" r="1.5" fill="#38bdf8"/>
+        <path d="M48 20 A 18 18 0 0 1 50 38" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"/>
+        <polyline points="45,38 50,40 53,35" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="orientation-tag"><span class="pulse-dot"></span> NASA FLIGHT CONTROL DIRECTIVE</div>
+    <h3 class="orientation-title">ROTATE DEVICE TO LANDSCAPE</h3>
+    <p class="orientation-copy">Deep-space orbital telemetry and flight controls require widescreen landscape orientation.</p>
+    <button class="primary-button orient-force-btn" id="btnForceLandscape">
+      <span>ACTIVATE LANDSCAPE COCKPIT</span>
+      <b>↗</b>
+    </button>
+  </div>
+</div>
+<div id="global-crew-bar" class="global-crew-bar" style="display:none;"></div>
 <main id="menu-view" class="menu-view">
 <div class="menu-topline"><span><i class="status-dot"></i> MISSION PLANNING • DEEP SPACE NETWORK</span><span>SECTOR SOL-03 <b>•</b> FLIGHT AUTHORITY 07</span></div>
-<aside class="brief-panel hud-panel"><div class="panel-caption"><span>MISSION BRIEFING</span><span id="mission-code">03 • 05</span></div><p class="eyebrow" id="mission-subtitle">THE LAST TRANSMISSION</p><h1>MISSION: <span id="planet-name">MARS</span></h1><div class="mission-tags"><span id="mission-type">SEARCH • DISCOVERY</span><span id="risk-label">CLASS III • HABITABLE VOID</span></div><p id="mission-description" class="brief-copy">Ares Station went dark 19 days ago. Last night, a repeating signal emerged from the canyon below it. You command the only vessel within range. Find the station. Recover its science. Bring the story home.</p><div class="brief-stats"><div><span>DESTINATION RANGE</span><b id="destination-range">225M KM • MEAN</b></div><div><span>PLANNED TRANSFER</span><b id="transfer-time">214 DAYS</b></div></div><div class="mission-goal"><span class="target-icon">⌖</span><div class="goal-text-wrap"><small>TARGET OBJECTIVE</small><strong id="primary-goal">LOCATE ARES STATION</strong></div></div><div class="brief-footer"><span id="record-label">THE NEXT FRONTIER IS YOURS TO EXPLORE.</span><span>↗</span></div></aside>
-<div class="planet-overlay" aria-hidden="true"><div class="planet-coordinate top">R.A. 04h 33m &nbsp; • &nbsp; DEC. +23° 18′</div><svg viewBox="0 0 520 460"><path d="M64 110L40 120L20 220L40 334L60 344M456 110L480 120L500 220L480 334L460 344"/><path class="fine" d="M92 68H175M345 68H428M92 402H175M345 402H428"/><path d="M253 65H267M260 58V72M253 405H267M260 398V412"/></svg><div class="planet-coordinate bottom"><i></i> LIVE ORBITAL VISUALIZATION • <span id="planet-rotation">024.8°</span></div></div>
-<aside class="right-panels"><section class="hud-panel system-preview"><div class="panel-caption"><span>ODYSSEY • VESSEL 07</span><span class="signal-bars">▂▃▅▇</span></div><div class="ship-blueprint"><svg viewBox="0 0 220 94" aria-hidden="true"><path d="M110 8L123 30V65L110 82L97 65V30ZM97 40L62 49V67L97 60M123 40L158 49V67L123 60M67 50H23V65H67M153 50H197V65H153M101 67V88M119 67V88M107 30H113V51H107Z"/><path d="M24 56H63M24 61H63M159 56H196M159 61H196M110 15V25"/></svg><span>CONFIGURATION • EXPLORER</span></div><div class="mini-resource"><span>HULL INTEGRITY</span><b>100<span>%</span></b><i style="--value:100%"></i></div><div class="mini-resource"><span>PROPELLANT</span><b>100<span>%</span></b><i style="--value:100%"></i></div><div class="mini-resource"><span>POWER RESERVE</span><b>100<span>%</span></b><i style="--value:100%"></i></div></section><section class="hud-panel route-preview"><div class="panel-caption"><span>MISSION TRAJECTORY • 6 PHASES</span></div><div class="route-art"><span class="route-earth"></span><svg viewBox="0 0 220 75"><path d="M24 60Q70 5 192 21"/><circle cx="85" cy="26" r="3"/></svg><span class="route-target"></span></div><div class="route-labels"><span>EARTH</span><span id="trajectory-target">MARS</span></div><div class="journey-dots"><span>DEPART</span><i></i><span>DISCOVER</span><i></i><span>RETURN</span></div></section></aside>
+<aside class="brief-panel hud-panel">
+  <div class="panel-caption">
+    <span>MISSION BRIEFING</span>
+    <div class="panel-caption-actions">
+      <span id="mission-code">03 • 05</span>
+      <button class="panel-minimize-btn" id="collapse-brief-btn" title="Minimize Briefing (Left)">◂</button>
+    </div>
+  </div>
+  <p class="eyebrow" id="mission-subtitle">THE LAST TRANSMISSION</p>
+  <h1>MISSION: <span id="planet-name">MARS</span></h1>
+  <div class="mission-tags">
+    <span id="mission-type">SEARCH • DISCOVERY</span>
+    <span id="risk-label">CLASS III • HABITABLE VOID</span>
+  </div>
+  <p id="mission-description" class="brief-copy">Ares Station went dark 19 days ago. Last night, a repeating signal emerged from the canyon below it. You command the only vessel within range. Find the station. Recover its science. Bring the story home.</p>
+  <div class="brief-stats">
+    <div><span>DESTINATION RANGE</span><b id="destination-range">225M KM • MEAN</b></div>
+    <div><span>PLANNED TRANSFER</span><b id="transfer-time">214 DAYS</b></div>
+    <div><span>MEAN RADIUS</span><b id="planet-radius">3,390 KM • 0.53× EARTH</b></div>
+    <div><span>SURFACE GRAVITY</span><b id="planet-gravity">3.71 M/S² (0.38 G)</b></div>
+  </div>
+  <div class="mission-goal">
+    <span class="target-icon">⌖</span>
+    <div class="goal-text-wrap">
+      <small>TARGET OBJECTIVE</small>
+      <strong id="primary-goal">LOCATE ARES STATION</strong>
+    </div>
+  </div>
+  <div class="brief-footer">
+    <span id="record-label">THE NEXT FRONTIER IS YOURS TO EXPLORE.</span>
+    <span>↗</span>
+  </div>
+</aside>
+<button class="edge-restore-tab left" id="restore-brief-tab" hidden title="Restore Mission Briefing (U)"><span>◖</span> BRIEFING</button>
+<button class="edge-restore-tab right" id="restore-right-tab" hidden title="Restore Vessel Info (U)">STATUS <span>◗</span></button>
+<div class="planet-overlay" aria-hidden="true">
+  <div class="planet-coordinate top">R.A. 04h 33m &nbsp; • &nbsp; DEC. +23° 18′</div>
+  <svg viewBox="0 0 520 460">
+    <path d="M64 110L40 120L20 220L40 334L60 344M456 110L480 120L500 220L480 334L460 344"/>
+    <path class="fine" d="M92 68H175M345 68H428M92 402H175M345 402H428"/>
+    <path d="M253 65H267M260 58V72M253 405H267M260 398V412"/>
+  </svg>
+  <div class="planet-coordinate bottom">
+    <i></i> LIVE ORBITAL VISUALIZATION • <span id="planet-rotation">024.8°</span>
+    <button class="menu-clean-view-toggle" id="menu-clean-toggle" title="Toggle Clean View (U)">
+      <span class="clean-icon">◱</span> <span id="menu-clean-label">CLEAN VIEW</span> <kbd>U</kbd>
+    </button>
+  </div>
+</div>
+<aside class="right-panels">
+  <section class="hud-panel system-preview">
+    <div class="panel-caption">
+      <span>ODYSSEY • VESSEL 07</span>
+      <div class="panel-caption-actions">
+        <span class="signal-bars">▂▃▅▇</span>
+        <button class="panel-minimize-btn" id="collapse-right-btn" title="Minimize Vessel Info (Right)">▸</button>
+      </div>
+    </div>
+    <div class="ship-blueprint">
+      <svg viewBox="0 0 220 94" aria-hidden="true">
+        <path d="M110 8L123 30V65L110 82L97 65V30ZM97 40L62 49V67L97 60M123 40L158 49V67L123 60M67 50H23V65H67M153 50H197V65H153M101 67V88M119 67V88M107 30H113V51H107Z"/>
+        <path d="M24 56H63M24 61H63M159 56H196M159 61H196M110 15V25"/>
+      </svg>
+      <span>CONFIGURATION • EXPLORER</span>
+    </div>
+    <div class="mini-resource"><span>HULL INTEGRITY</span><b>100<span>%</span></b><i style="--value:100%"></i></div>
+    <div class="mini-resource"><span>PROPELLANT</span><b>100<span>%</span></b><i style="--value:100%"></i></div>
+    <div class="mini-resource"><span>POWER RESERVE</span><b>100<span>%</span></b><i style="--value:100%"></i></div>
+  </section>
+  <section class="hud-panel route-preview">
+    <div class="panel-caption"><span>MISSION TRAJECTORY • 6 PHASES</span></div>
+    <div class="route-art">
+      <span class="route-earth"></span>
+      <svg viewBox="0 0 220 75"><path d="M24 60Q70 5 192 21"/><circle cx="85" cy="26" r="3"/></svg>
+      <span class="route-target"></span>
+    </div>
+    <div class="route-labels"><span>EARTH</span><span id="trajectory-target">MARS</span></div>
+    <div class="journey-dots"><span>DEPART</span><i></i><span>DISCOVER</span><i></i><span>RETURN</span></div>
+  </section>
+</aside>
 <div class="menu-center-caption"><span class="ship-label-line"></span><span>ODYSSEY 07 <small>YOUR EXPLORATION VEHICLE</small></span></div>
 <!-- Hidden fallback socket for engine listeners -->
 <section class="destination-strip" style="display:none !important;" hidden aria-hidden="true"><div id="destination-cards"></div></section>
@@ -90,15 +226,145 @@
 <!-- Floating Primary CTA in bottom-right -->
 <div class="menu-bottom"><button class="primary-button" id="design-button"><span>DESIGN THIS MISSION</span><b>↗</b></button></div>
 </main>
+<!-- Dynamic Super Heavy Rocket Launch Simulation View -->
+<main id="launch-view" class="launch-view" hidden aria-label="Odyssey 07 Rocket Launch Simulation"></main>
+
 <main id="flight-view" class="flight-view" hidden>
+<div id="crew-flight-hud" class="crew-flight-hud" style="display:none;"></div>
 <div class="flight-top"><div><span class="eyebrow" id="flight-chapter">01 • DEPARTURE</span><h2 id="flight-title">LEAVE THE BLUE BEHIND</h2></div><div class="mission-clock"><span>MISSION ELAPSED</span><strong id="elapsed">00:00</strong><button id="pause-button" class="small-button">Ⅱ PAUSE <kbd>ESC</kbd></button></div></div>
-<aside class="flight-left"><section class="hud-panel telemetry"><div class="panel-caption">VEHICLE TELEMETRY <span class="live">LIVE</span></div><div id="resource-bars"></div><div class="telemetry-extra"><span>REPAIR KITS <b id="repair-count">02</b></span><button class="text-button" id="repair-button">REPAIR <kbd>R</kbd></button></div></section><section class="hud-panel radar-panel"><div class="panel-caption">PROXIMITY SCAN <span>250 M</span></div><canvas id="radar" width="240" height="170" aria-label="Nearby hazards and target radar"></canvas><div class="radar-key"><span><i></i> TARGET</span><span><i></i> HAZARD</span></div></section><div class="telemetry-readouts"><div><span>VELOCITY</span><b><span id="speed-value">0.0</span> <small>m/s</small></b></div><div><span>THRUSTER TEMP.</span><b id="heat-value">0%</b></div></div></aside>
-<aside class="flight-right"><section class="hud-panel objective-panel"><div class="panel-caption">MISSION OBJECTIVES <span id="objective-fraction">01 • 03</span></div><p id="objective-main">Fly through the departure gates</p><ol id="objective-list"></ol><div class="target-range"><span>TARGET RANGE</span><strong id="range-value">220 <small>m</small></strong></div></section><section class="hud-panel power-panel"><div class="panel-caption">POWER DISTRIBUTION <span>MANUAL</span></div><button data-route="engine"><kbd>1</kbd> ENGINES <span>↗</span></button><button data-route="science"><kbd>2</kbd> SCIENCE <span>⌬</span></button><button data-route="shield"><kbd>3</kbd> SHIELDS <span>◇</span></button><p id="route-description">Balanced allocation. Select a priority.</p></section><div class="science-readout"><span class="science-symbol">⌬</span><div><small>SCIENCE RECOVERED</small><b id="science-value">000</b><span> POINTS</span></div></div></aside>
+<aside class="flight-left">
+  <section class="hud-panel telemetry">
+    <div class="panel-caption">
+      <span>VEHICLE TELEMETRY</span>
+      <div class="panel-caption-actions">
+        <span class="live">LIVE</span>
+        <button class="panel-minimize-btn" id="collapse-flight-left-btn" title="Minimize Telemetry (U)">◂</button>
+      </div>
+    </div>
+    <div id="resource-bars"></div>
+    <div class="telemetry-extra">
+      <span>REPAIR KITS <b id="repair-count">02</b></span>
+      <button class="text-button" id="repair-button">REPAIR <kbd>R</kbd></button>
+    </div>
+  </section>
+  <section class="hud-panel radar-panel">
+    <div class="panel-caption">PROXIMITY SCAN <span id="radar-mode-tag">250 M</span></div>
+    <canvas id="radar" width="240" height="170" aria-label="Nearby hazards and target radar"></canvas>
+    <div class="radar-key">
+      <span><i></i> TARGET</span>
+      <span><i></i> HAZARD</span>
+      <span id="radar-conjunction-key" style="display:none;color:var(--red)"><i style="background:var(--red)"></i> CONJUNCTION</span>
+    </div>
+  </section>
+  <div class="telemetry-readouts">
+    <div><span>VELOCITY</span><b><span id="speed-value">0.0</span> <small>m/s</small></b></div>
+    <div><span>THRUSTER TEMP.</span><b id="heat-value">0%</b></div>
+  </div>
+</aside>
+
+<button class="edge-restore-tab left" id="restore-flight-left-tab" hidden title="Restore Telemetry (U)"><span>◖</span> TELEMETRY</button>
+<button class="edge-restore-tab right" id="restore-flight-right-tab" hidden title="Restore Objectives (U)">OBJECTIVES <span>◗</span></button>
+
+<aside class="flight-right">
+  <section class="hud-panel objective-panel">
+    <div class="panel-caption">
+      <span>MISSION OBJECTIVES</span>
+      <div class="panel-caption-actions">
+        <span id="objective-fraction">01 • 03</span>
+        <button class="panel-minimize-btn" id="collapse-flight-right-btn" title="Minimize Objectives (U)">▸</button>
+      </div>
+    </div>
+    <p id="objective-main">Fly through the departure gates</p>
+    <ol id="objective-list"></ol>
+    <div class="target-range">
+      <span>TARGET RANGE</span>
+      <strong id="range-value">220 <small>m</small></strong>
+    </div>
+  </section>
+  <section class="hud-panel power-panel">
+    <div class="panel-caption">POWER DISTRIBUTION <span>MANUAL</span></div>
+    <button data-route="engine"><kbd>1</kbd> ENGINES <span>↗</span></button>
+    <button data-route="science"><kbd>2</kbd> SCIENCE <span>⌬</span></button>
+    <button data-route="shield"><kbd>3</kbd> SHIELDS <span>◇</span></button>
+    <p id="route-description">Balanced allocation. Select a priority.</p>
+  </section>
+  <div class="science-readout">
+    <span class="science-symbol">⌬</span>
+    <div><small>SCIENCE RECOVERED</small><b id="science-value">000</b><span> POINTS</span></div>
+  </div>
+</aside>
 <section id="approach-guide" class="approach-guide" hidden aria-label="Precision approach guidance"><div class="approach-heading"><span id="approach-name">DOCKING GUIDANCE</span><b id="approach-state">ALIGN</b></div><svg viewBox="0 0 160 100" aria-hidden="true"><circle cx="80" cy="50" r="32"/><path d="M80 6V94M20 50H140"/><rect x="71" y="41" width="18" height="18"/><circle id="approach-dot" cx="80" cy="50" r="4"/></svg><div id="approach-values"></div><small>A/D lateral · ↑/↓ vertical · S brake</small></section><div class="flight-reticle" aria-hidden="true"><span></span><i></i><b></b></div><div id="target-marker" class="target-marker"><span class="target-bracket">◇</span><strong id="marker-label">DEPARTURE GATE</strong><small id="marker-range">220 M</small></div>
-<div class="flight-center-bottom"><div id="interact-prompt" class="interact-prompt" hidden><kbd>E</kbd><span id="interact-label">HOLD TO SCAN</span><div><i id="scan-progress"></i></div></div><div id="flight-tip" class="flight-tip">THRUST <kbd>W</kbd> &nbsp; BRAKE <kbd>S</kbd> &nbsp; STEER <kbd>A</kbd><kbd>D</kbd> &nbsp; ALTITUDE <kbd>↑</kbd><kbd>↓</kbd></div><div class="pilot-controls"><button id="assist-button" class="small-button">GUIDANCE <b>OFF</b> <kbd>G</kbd></button><button id="camera-button" class="small-button">CHASE CAM <kbd>C</kbd></button><button id="pulse-button" class="small-button">SCAN PULSE <kbd>Q</kbd></button></div></div>
-<div class="comm-panel" id="comm-panel"><div class="comm-avatar">◈</div><div><div class="comm-header"><b id="comm-speaker">HOUSTON • FLIGHT DIRECTOR</b><span id="comm-state">INCOMING TRANSMISSION</span></div><p id="comm-text"></p></div><div class="comm-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+
+<!-- Expandable NASA Data Provenance HUD Card on Scan Completion -->
+<aside id="nasa-scan-provenance-card" class="nasa-scan-card compact" hidden aria-live="polite">
+  <div class="nasa-card-header">
+    <div class="nasa-insignia-pill">NASA PDS</div>
+    <span class="nasa-card-badge">OPEN DATA PROVENANCE</span>
+    <button id="nasa-card-toggle" class="nasa-card-toggle" title="Toggle detailed provenance">DETAILS ▾</button>
+    <button id="nasa-card-close" class="nasa-card-close" aria-label="Dismiss">×</button>
+  </div>
+  <div class="nasa-card-body">
+    <h4 id="nasa-card-target">TARGET SCIENTIFIC OBSERVATION</h4>
+    <div class="nasa-card-meta">
+      <div><span>INSTRUMENT:</span> <strong id="nasa-card-instrument">MRO CRISM / Perseverance PIXL</strong></div>
+      <div><span>DATASET ID:</span> <code id="nasa-card-dataset">PDS: M2020-PIXL-2-EDR-V1.0</code></div>
+      <div><span>MISSION / AGENCY:</span> <b id="nasa-card-agency">NASA Mars Exploration Program</b></div>
+    </div>
+    <p id="nasa-card-finding">2.2 µm clay absorption and 1.05 µm olivine-carbonate alteration indicating ancient lacustrine delta waters.</p>
+  </div>
+  <div class="nasa-card-footer">
+    <a id="nasa-card-pds-link" href="https://pds-geosciences.wustl.edu/" target="_blank" rel="noopener">ACCESS NASA ARCHIVE ↗</a>
+    <button id="nasa-card-mute" class="text-button" title="Don't show popups during flight">MUTE IN FLIGHT</button>
+    <button id="nasa-card-open-drawer" class="text-button">FULL PAYLOAD ⊞</button>
+  </div>
+</aside>
+
+<div class="flight-center-bottom">
+  <div id="interact-prompt" class="interact-prompt" hidden><kbd>E</kbd><span id="interact-label">HOLD TO SCAN</span><div><i id="scan-progress"></i></div></div>
+  <div id="flight-tip" class="flight-tip">THRUST <kbd>W</kbd> &nbsp; BRAKE <kbd>S</kbd> &nbsp; STEER <kbd>A</kbd><kbd>D</kbd> &nbsp; ALTITUDE <kbd>↑</kbd><kbd>↓</kbd></div>
+  <div class="pilot-controls">
+    <button id="assist-button" class="small-button">GUIDANCE <b>OFF</b> <kbd>G</kbd></button>
+    <button id="flight-clean-toggle" class="small-button" title="Toggle Clean HUD (U)">HUD: <b id="flight-clean-label">FULL</b> <kbd>U</kbd></button>
+    <button id="orbit-button" class="small-button" hidden>ORBIT: <b>HAMO</b> <kbd>T</kbd></button>
+    <button id="retreat-button" class="small-button" hidden>RETREAT <kbd>X</kbd></button>
+    <button id="cam-button" class="small-button" hidden>CAM BURN <kbd>B</kbd></button>
+    <button id="camera-button" class="small-button">CHASE CAM <kbd>C</kbd></button>
+    <button id="pulse-button" class="small-button">SCAN PULSE <kbd>Q</kbd></button>
+  </div>
+</div>
+
+<!-- Discrete, Auto-Dismissing Aerospace Radio Transmission HUD -->
+<div class="comm-panel" id="comm-panel" hidden>
+  <div class="comm-avatar">◈</div>
+  <div class="comm-body">
+    <div class="comm-header">
+      <b id="comm-speaker">HOUSTON • FLIGHT DIRECTOR</b>
+      <span id="comm-state">INCOMING TRANSMISSION</span>
+    </div>
+    <p id="comm-text"></p>
+  </div>
+  <div class="comm-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <button id="comm-dismiss-btn" class="comm-dismiss-btn" title="Dismiss message (Click / ESC)">✕</button>
+</div>
 <div class="flight-progress" id="flight-progress"></div></main>
 <div id="modal-layer" class="modal-layer" hidden><section id="dialog" class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title"></section></div>
+
+<!-- Interactive NASA Data Provenance Sliding Drawer -->
+<div id="nasa-drawer-backdrop" class="nasa-drawer-backdrop" hidden></div>
+<aside id="nasa-data-drawer" class="nasa-data-drawer" hidden role="dialog" aria-labelledby="nasa-drawer-title">
+  <div class="drawer-header">
+    <div class="drawer-header-brand">
+      <span class="meatball-circle">NASA</span>
+      <div>
+        <span class="eyebrow" id="nasa-drawer-agency">NASA SCIENCE MISSION DIRECTORATE</span>
+        <h3 id="nasa-drawer-title">OPEN DATA PROVENANCE // PDS REPOSITORY</h3>
+      </div>
+    </div>
+    <button id="nasa-drawer-close" class="close-dialog" aria-label="Close NASA Data Drawer">×</button>
+  </div>
+  <div class="drawer-body" id="nasa-drawer-content"></div>
+</aside>
+
 <div id="cinematic" class="cinematic" hidden><div class="cinematic-line"></div><small id="cinematic-kicker">TRANSFER WINDOW CONFIRMED</small><h2 id="cinematic-title">THE SPACE BETWEEN</h2><p id="cinematic-copy">Coasting through the dark.</p><div class="cinematic-progress"><i></i></div></div>
 <div id="notifications" class="notifications" aria-live="polite"></div>
 <footer class="bottom-status" style="display:none !important;" hidden></footer>

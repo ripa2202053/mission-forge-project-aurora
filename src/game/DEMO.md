@@ -1,4 +1,4 @@
-# Mission Forge — suggested judge demonstration
+# Project Aurora — suggested judge demonstration
 
 ## Core statement
 
